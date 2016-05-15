@@ -3,7 +3,7 @@ var context = canvas.getContext('2d');
 
 //var domain = "http://files.whatevercorp.net/running/"; //for online version
 var domain = "images/"; //for local version
-var gravity = 0.4;
+var gravity = 0.75;
 var tileSize = 64;
 var tilesH = Math.ceil(canvas.width/tileSize);
 var tilesV = Math.ceil(canvas.height/tileSize);
@@ -17,6 +17,12 @@ keys.down = 'S'.charCodeAt(0);
 keys.right = 'D'.charCodeAt(0);
 keys.attack = 32;
 keys.esc = 27;
+
+//player stats (affected by items)
+var swimAcceleration = 1.8;
+var swimMaxSpeed = 4.5;
+var breathLoss = 0.07;
+
 
 //watch for keys being pressed
 for (var i in keys)
@@ -48,6 +54,8 @@ function weapon(spr, width, height) {
 	this.draw = function(x, y, xScale) {
 		this.spr.draw(x, y, xScale);
 	};
+	
+	//weapon damage, firetime, projectile, etc, here
 }
 
 //obstacles.push(new obstacle(0, canvas.height-200, 400, 64));
@@ -91,17 +99,17 @@ function playerObject() {
   		}else {
   			if (this.swimming) {
 	  			this.swimming = false;
-	  			if (input[keys.up]) this.vspeed = -10;
+	  			if (input[keys.up]) this.vspeed = -14;
 	  		}
   		}
   		
   		//check if the player's head is underwater
 	  	if (this.y+8 >= waterLevel) {
-	  		this.breath -= 0.01;
+	  		this.breath -= breathLoss;
 	  		if (this.breath < 0) this.breath = 0;
 	  		if (this.breath == 0) this.takeDamage(0.5);
 	  	}else {
-	  		this.breath += 0.1;
+	  		this.breath += 0.4;
 	  		if (this.breath > this.breathMax) this.breath = this.breathMax;
 	  		
 	  		//bob up and down a bit for effect
@@ -119,21 +127,21 @@ function playerObject() {
   		
   		//player moves at different speed if walking, swimming or jumping
   		if (this.standing) {
-  			this.speedCap = 6;
-  			this.acceleration = 1.2;
-  			this.friction = 0.5;
+  			this.speedCap = 7.5;
+  			this.acceleration = 3.2;
+  			this.friction = 1.5;
   		}else if (this.swimming) {
-  			this.speedCap = 3;
-  			this.acceleration = 0.8;
+  			this.speedCap = swimMaxSpeed;
+  			this.acceleration = swimAcceleration;
   			this.friction = 0.2;
   		}else {
-  			this.acceleration = 0.2;
-  			this.friction = 0.05;
+  			this.acceleration = 3.2;
+  			this.friction = 0.5;
   		}
   		
   		//move according to user input
 		if (input[keys.up]) {
-			if (this.standing) this.vspeed = -10; else //jump
+			if (this.standing) this.vspeed = -15; else //jump
 			if (this.swimming && this.vspeed > -this.speedCap) this.vspeed -= this.acceleration; //swim up
 		}
 		
@@ -241,7 +249,7 @@ function gameWindow() {
 	waterLevel = canvas.height-180;
 	levelWidth = 5000;
 	levelHeight = 2000;
-	level = decodeLevel("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0/0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
+	level = decodeLevel("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
 	/*levelWidth = level[0].length;
 	levelHeight = level.length;*/
 	player = new playerObject();
