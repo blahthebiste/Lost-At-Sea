@@ -2,6 +2,8 @@ var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
 
 //var domain = "http://files.whatevercorp.net/running/"; //for online version
+var xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+var Level1 = "https://www.dropbox.com/s/nezs9g939t90g1c/Room1.XML?dl=1";
 var domain = "images/"; //for local version
 var gravity = 0.75;
 var tileSize = 64;
@@ -30,6 +32,9 @@ for (var i in keys)
 
 var obstacles = [];
 var obstaclesOnscreen = [];
+var tileTypeDict = {};
+tileTypeDict["-"] = "air";
+tileTypeDict["G"] = "ground";
 
 function obstacle(x, y, width, height) {
 	this.x = x;
@@ -42,6 +47,24 @@ function obstacle(x, y, width, height) {
 	this.draw = function() {
 	  	context.fillStyle = 'green';
 	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
+	};
+}
+
+//general tile function
+function tile(type, x, y, width, height) {
+	this.type = type;
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+	this.bb = new boundingBox(width, height, 0, 0);
+	this.bb.update(x, y);
+	
+	this.draw = function() {
+		if(type != "-"){
+	  	context.fillStyle = 'green';
+	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
+		}
 	};
 }
 
@@ -227,15 +250,63 @@ function playerObject() {
   	};
 }
 
-function decodeLevel(str) {
-	var lev = str.split("/");
-	var dy = 0;
-	for (var i in lev) {
-		lev[i] = lev[i].split(",");
-		for (var j in lev[i])
-			lev[i][j] = createObject(j*tileSize, i*tileSize, lev[i][j]);
-	}
-	return lev;
+// function decodeLevel(str) {
+	// var lev = str.split("/");
+	// var dy = 0;
+	// for (var i in lev) {
+		// lev[i] = lev[i].split(",");
+		// for (var j in lev[i])
+			// lev[i][j] = createObject(j*tileSize, i*tileSize, lev[i][j]);
+	// }
+	// return lev;
+// }
+
+//New decodeLevel function:
+function buildLevel(levelDoc) {
+  var LObj = new levelObj(levelDoc);
+  var level = LObj.levelData;
+  for (var i = 0; i < LObj.width; i++) {
+    for (var j = 0; j < LObj.height; j++) {
+      //create tile
+    }
+  }
+  return level;
+}
+
+function levelObj(lvlstr) {
+  var xmlDoc;
+  if (typeof window.DOMParser != "undefined") {
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", lvlstr, false);
+    /*
+    if (xmlhttp.overrideMimeType) {
+      xmlhttp.overrideMimeType('text/xml');
+    }
+    */
+    xmlhttp.send();
+    xmlDoc = xmlhttp.responseXML;
+  } else {
+    xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+    xmlDoc.load(lvlstr);
+  }
+  this.levelData = [][];
+
+  var xmlRoot = xmlDoc.documentElement;
+  this.width = xmlDoc.getElementsByTagName("Width")[0].childNodes[0].nodeValue;
+  this.height = xmlDoc.getElementsByTagName("Height")[0].childNodes[0].nodeValue;
+  //Iterate through row elements
+  var r = 0;
+
+  for (var row in xmlDoc.getElementsByTagName("TileData").childNodes) {
+    var rowString = row.nodeValue;
+    //Parses only single characters for now, ignoring white space
+    for (var c = 0; c < rowString.length; c++) {
+      if (rowString.charAt(c) != " " && rowString.charAt(c) != "	") {
+        levelData[r][c] = rowString.charAt(c);
+      }
+    }
+    r++;
+  }
 }
 
 function createObject(x, y, type) {
@@ -249,7 +320,8 @@ function gameWindow() {
 	waterLevel = canvas.height-180;
 	levelWidth = 5000;
 	levelHeight = 2000;
-	level = decodeLevel("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
+	//level = decodeLevel("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
+	level = buildLevel(Level1);
 	/*levelWidth = level[0].length;
 	levelHeight = level.length;*/
 	player = new playerObject();
