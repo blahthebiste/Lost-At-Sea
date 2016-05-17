@@ -1,0 +1,27 @@
+<Room1>
+	<Name>Room1test</Name>
+	<Width>20</Width>
+	<Height>20</Height>
+	<TileData>
+		<Row1> GGGGGGGGGGGGGGG---GG</Row1>
+		<Row2> GGGGG-------------GG</Row2>
+		<Row3> GGGGG------------GGG</Row3>
+		<Row4> --------GGGGGGGGGGGG</Row4>
+		<Row5> --------GGGGGGGGGGGG</Row5>
+		<Row6> ------PPGGGGGGGGGGGG</Row6>
+		<Row7> GGG-----GGGGGGGGGGGG</Row7>
+		<Row8> GGGG-------------GGG</Row8>
+		<Row9> GGGG--------------GG</Row9>
+		<Row10>GGGGGGGGGGGGGG-----G</Row10>
+		<Row11>GGGGGGGGGGGGGG-----G</Row11>
+		<Row12>GGGGGGGGGGGGGG----GG</Row12>
+		<Row13>GGGGGGGGGGGG-----GGG</Row13>
+		<Row14>GGGGGGGGG-------GGGG</Row14>
+		<Row15>GGGGGG---------GGGGG</Row15>
+		<Row16>G------------GGGGGGG</Row16>
+		<Row17>G---------GGGGGGGGGG</Row17>
+		<Row18>G-------PPGGGGGGGGGG</Row18>
+		<Row19>G---------GGGGGGGGGG</Row19>
+		<Row20>GGGGGGGGGGGGGGGGGGGG</Row20>
+	</TileData>
+</Room1>

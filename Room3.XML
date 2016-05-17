@@ -1,0 +1,27 @@
+<Room3>
+	<Name>Room3test</Name>
+	<Width>20</Width>
+	<Height>20</Height>
+	<TileData>
+		<Row1> GGGGGGGGGGGGGGGGGGGG</Row1>
+		<Row2> G------------------G</Row2>
+		<Row3> G------------------G</Row3>
+		<Row4> GGGGGGP----P-------G</Row4>
+		<Row5> G-------------PP---G</Row5>
+		<Row6> G------------------G</Row6>
+		<Row7> G--------P--------PG</Row7>
+		<Row8> G------------------G</Row8>
+		<Row9> G---PP-------PP----G</Row9>
+		<Row10>G------------------G</Row10>
+		<Row11>GG-----------------G</Row11>
+		<Row12>GGGGGGGGGGGGGGGG---G</Row12>
+		<Row13>G------------------G</Row13>
+		<Row14>G-----------------GG</Row14>
+		<Row15>G---GGGGGGGGGGGGGGGG</Row15>
+		<Row16>G------------------G</Row16>
+		<Row17>GG-----------------G</Row17>
+		<Row18>GGGGGGGGGGGGGGGG---G</Row18>
+		<Row19>GG----------------GG</Row19>
+		<Row20>GG---------------GGG</Row20>
+	</TileData>
+</Room3>
