@@ -8,15 +8,35 @@ var tileSize = 64;
 var tilesH = Math.ceil(canvas.width/tileSize);
 var tilesV = Math.ceil(canvas.height/tileSize);
 var waterLevel, levelWidth, levelHeight, level, camera, player;
+var Room1 = "G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,G,G,G,G/\
+			 G,G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G/\
+			 G,G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G/\
+			 G,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,-,-,-,-,-,-,P,P,G,G,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,G,G,G,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G/\
+			 G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,G,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G,G,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,-,-,G,G,G,G,G/\
+			 G,G,G,G,G,G,G,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G/\
+			 G,G,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G/\
+			 G,G,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,G,-,-,-,-,-,-,-,P,P,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,G,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G"
 
 //Weapon library, stores weapon data in this format:
 //name: [damage, attack_delay (ms), projectile_type (or melee for melee weapons), melee range (in tileSizes)]
 var weapon_library = function(name){
 	switch (name){
 	case "sword": 
-		return [ 15, 500, "melee", 1];
+		return [ 15, 17, "melee", 1];
 	case "hatchet": 
-		return [15, 333, "melee", 0.65];
+		return [15, 11, "melee", 0.65];
 	}
 }
 
@@ -65,6 +85,7 @@ function weapon(spr, width, height, name) {
 
 	this.damage = weaponStatArray[0];
 	this.attack_delay = weaponStatArray[1];
+	this.attack_cooldown = weaponStatArray[1];
 	this.projectile = weaponStatArray[2];
 	this.range = weaponStatArray[3];
 	
@@ -73,10 +94,29 @@ function weapon(spr, width, height, name) {
 	};
 	
 	this.fire = function(x, y){
-		player.hp -= 5;
-		
+		//REPLACE FOLLOWING LINE WITH ANIMATION CODE
+			this.spr.setImage(0, 1);
+			if(this.projectile == "melee")
+			{
+				applyDamage(this.damage, this.range*tileSize, x, y);
+			}
+			else {
+				spawn_projectile(this.damage, this.projectile, x, y);
+			}
 	}
-	//weapon damage, firetime, projectile, etc, here
+	
+	//TBI
+	this.reset_animation = function(){
+		this.spr.setImage(0, 0);
+	}
+}
+
+var applyDamage = function(damage, aoe, x, y){
+	//tbi
+}
+
+var spawn_projectile = function(damage, projectileName, x, y){
+	//tbi
 }
 
 //obstacles.push(new obstacle(0, canvas.height-200, 400, 64));
@@ -105,17 +145,20 @@ function playerObject() {
   	this.weapon = new weapon("sword", 64, 107, "sword");
   	this.weaponX = 22;
   	this.weaponY = -21;
+	this.fallSpeed = 9;
   	
 	this.performAttack = function(){
-		this.weapon.spr.setImage(0, 1);
 		//apply damage based on weapon
 		this.weapon.fire(this.x, this.y);
+		this.weapon.attack_cooldown = this.weapon.attack_delay;		
 	}
 	
   	this.update = function() {
   		if (this.dmgTick > 0) this.dmgTick -= 1;
-  		if (input.down) this.performAttack();
-  			else this.weapon.spr.setImage(0, 0);
+		if (this.weapon.attack_cooldown > 0) this.weapon.attack_cooldown -= 1;
+		//Attack now takes mouse1
+  		if ((this.weapon.attack_cooldown < 1) && input.down) this.performAttack();
+  			else this.weapon.reset_animation();
   		
   		//check if the player is in water
   		if (this.y+this.bb.height/2 > waterLevel) {
@@ -177,7 +220,7 @@ function playerObject() {
 		
 		if (input[keys.down] && this.swimming && this.vspeed < this.speedCap) this.vspeed += this.acceleration; //swim down
 		
-		if (/*!this.standing &&*/ !this.swimming && this.vspeed < 10) this.vspeed += gravity; //fall
+		if (/*!this.standing &&*/ !this.swimming && this.vspeed < this.fallSpeed) this.vspeed += gravity; //fall
 		
 		/*if (this.swimming) applyFriction(this, 4, 4, this.friction, this.friction, false); //friction
 			else applyFriction(this, 6, 14, this.friction, 0, true);*/
@@ -256,7 +299,7 @@ function playerObject() {
 
 function decodeLevel(str) {
 	var lev = str.split("/");
-	var dy = 0;
+	var dy = 0; //?
 	for (var i in lev) {
 		lev[i] = lev[i].split(",");
 		for (var j in lev[i])
@@ -266,7 +309,7 @@ function decodeLevel(str) {
 }
 
 function createObject(x, y, type) {
-	if (type == 0) return null;
+	if (type == 0 || type == '-') return null;
 	var n = new obstacle(x, y, tileSize, tileSize);
 	obstacles.push(n);
 	return n;
@@ -276,7 +319,7 @@ function gameWindow() {
 	waterLevel = canvas.height-180;
 	levelWidth = 5000;
 	levelHeight = 2000;
-	level = decodeLevel("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
+	level = decodeLevel(Room1);//("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
 	/*levelWidth = level[0].length;
 	levelHeight = level.length;*/
 	player = new playerObject();
@@ -320,6 +363,8 @@ function gameWindow() {
    	context.textAlign = "center";
    	context.font = "14px Arial";
    	var txt = Math.floor(player.hp) + "/" + player.hpMax; //draw player's hp values
+	//for debugging, displays weapon firetime and current cooldown in health bar
+	//var txt = Math.floor(player.weapon.attack_cooldown) + "/" + player.weapon.attack_delay; //draw player's hp values
    	context.fillStyle = 'black';
    	context.fillText(txt, 72, 19);
    	
