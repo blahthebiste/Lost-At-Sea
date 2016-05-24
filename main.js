@@ -3,11 +3,43 @@ var context = canvas.getContext('2d');
 
 //var domain = "http://files.whatevercorp.net/running/"; //for online version
 var domain = "images/"; //for local version
-var gravity = 0.75;
+var gravity = 0.6;
 var tileSize = 64;
 var tilesH = Math.ceil(canvas.width/tileSize);
 var tilesV = Math.ceil(canvas.height/tileSize);
 var waterLevel, levelWidth, levelHeight, level, camera, player;
+var shake=0;
+var Room1 = "G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,G,G,G,G/\
+			 G,G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G/\
+			 G,G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G/\
+			 G,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,-,C,-,-,-,-,P,P,G,G,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,G,G,G,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G/\
+			 G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,G,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G,G,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,-,-,G,G,G,G,G/\
+			 G,G,G,G,G,G,G,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G/\
+			 G,G,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G/\
+			 G,G,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,G,-,-,-,-,-,-,-,P,P,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,G,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G/\
+			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G"
+
+//Weapon library, stores weapon data in this format:
+//name: [damage, attack_delay (ms), projectile_type (or melee for melee weapons), melee range (in tileSizes)]
+var weapon_library = function(name){
+	switch (name){
+	case "sword": 
+		return [ 15, 17, "melee", 1];
+	case "hatchet": 
+		return [15, 11, "melee", 0.65];
+	}
+};
 
 //user input
 var keys = {};
@@ -15,13 +47,13 @@ keys.up = 'W'.charCodeAt(0);
 keys.left = 'A'.charCodeAt(0);
 keys.down = 'S'.charCodeAt(0);
 keys.right = 'D'.charCodeAt(0);
-keys.attack = 32;
+//keys.attack = 32;
 keys.esc = 27;
 
 //player stats (affected by items)
-var swimAcceleration = 1.8;
-var swimMaxSpeed = 4.5;
-var breathLoss = 0.07;
+var swimAcceleration = 0.9;
+var swimMaxSpeed = 5;
+var breathLoss = 0.035;
 
 
 //watch for keys being pressed
@@ -45,32 +77,62 @@ function obstacle(x, y, width, height) {
 	};
 }
 
-function weapon(spr, width, height) {
+function weapon(spr, width, height, name) {
 	this.spr = new imageStrip(spr, width, height);
 	this.spr.row(20, 72, 1);
 	this.spr.row(0, height-72, 1, true);
 	this.spr.setImage(0, 0);
+	var weaponStatArray = weapon_library(name);
+
+	this.damage = weaponStatArray[0];
+	this.attack_delay = weaponStatArray[1];
+	this.attack_cooldown = weaponStatArray[1];
+	this.projectile = weaponStatArray[2];
+	this.range = weaponStatArray[3];
 	
 	this.draw = function(x, y, xScale) {
 		this.spr.draw(x, y, xScale);
 	};
 	
-	//weapon damage, firetime, projectile, etc, here
+	this.fire = function(x, y){
+		//REPLACE FOLLOWING LINE WITH ANIMATION CODE
+			this.spr.setImage(0, 1);
+			if(this.projectile == "melee")
+			{
+				applyDamage(this.damage, this.range*tileSize, x, y);
+			}
+			else {
+				spawn_projectile(this.damage, this.projectile, x, y);
+			}
+	};
+	
+	//TBI
+	this.reset_animation = function(){
+		this.spr.setImage(0, 0);
+	};
 }
+
+var applyDamage = function(damage, aoe, x, y){
+	//tbi
+};
+
+var spawn_projectile = function(damage, projectileName, x, y){
+	//tbi
+};
 
 //obstacles.push(new obstacle(0, canvas.height-200, 400, 64));
 
 function playerObject() {
 	this.x = canvas.width/2; //mostly self explanitory variables
   	this.y = canvas.height/2/*-98*/;
-  	this.moveSpeed = 4;
+  	this.moveSpeed = 2.5;
   	this.vspeed = 2;
   	this.hspeed = 0;
   	this.xScale = 1;
   	this.hp = this.hpMax = 10;
   	this.breath = this.breathMax = 10;
   	this.dmgTick = 0; //how long until player can be damaged again
-  	this.dmgTickMax = 15;
+  	this.dmgTickMax = 30;
   	this.standing = false;
   	this.swimming = false;
   	this.baseHeight = 98;
@@ -81,14 +143,25 @@ function playerObject() {
   	this.spr.row(120, 59, 2, false); //crouching animation
   	this.spr.row(85, 98, 2, false); //standing still
   	this.spr.setImage(0, 0);
-  	this.weapon = new weapon("sword", 64, 107);
+  	this.weapon = new weapon("sword", 64, 107, "sword");
   	this.weaponX = 22;
   	this.weaponY = -21;
+	this.fallSpeed = 9;
+	this.jumpAdd=0;
+	this.jumpMax=10;
   	
+	this.performAttack = function(){
+		//apply damage based on weapon
+		this.weapon.fire(this.x, this.y);
+		this.weapon.attack_cooldown = this.weapon.attack_delay;		
+	};
+	
   	this.update = function() {
   		if (this.dmgTick > 0) this.dmgTick -= 1;
-  		if (input[keys.attack]) this.weapon.spr.setImage(0, 1);
-  			else this.weapon.spr.setImage(0, 0);
+		if (this.weapon.attack_cooldown > 0) this.weapon.attack_cooldown -= 1;
+		//Attack now takes mouse1
+  		if ((this.weapon.attack_cooldown < 1) && input.down) this.performAttack();
+  			else this.weapon.reset_animation();
   		
   		//check if the player is in water
   		if (this.y+this.bb.height/2 > waterLevel) {
@@ -99,9 +172,10 @@ function playerObject() {
   		}else {
   			if (this.swimming) {
 	  			this.swimming = false;
-	  			if (input[keys.up]) this.vspeed = -14;
+	  			if (input[keys.up]) this.vspeed = -7;
 	  		}
   		}
+  		if (this.swimming) this.standing = false;
   		
   		//check if the player's head is underwater
 	  	if (this.y+8 >= waterLevel) {
@@ -109,17 +183,17 @@ function playerObject() {
 	  		if (this.breath < 0) this.breath = 0;
 	  		if (this.breath == 0) this.takeDamage(0.5);
 	  	}else {
-	  		this.breath += 0.4;
+	  		this.breath += 0.2;
 	  		if (this.breath > this.breathMax) this.breath = this.breathMax;
 	  		
 	  		//bob up and down a bit for effect
 	  		if (this.swimming) {
 	  			if (this.y+40 > waterLevel && !this.bDir) {
-	  				this.y -= 0.1;
+	  				this.y -= 0.05;
 	  			}else {
 	  				this.bDir = true;
 		  			if (this.y+32 < waterLevel && this.bDir) {
-		  				this.y += 0.1;
+		  				this.y += 0.05;
 		  			}else this.bDir = false;
 	  			}
 	  		}
@@ -127,22 +201,40 @@ function playerObject() {
   		
   		//player moves at different speed if walking, swimming or jumping
   		if (this.standing) {
-  			this.speedCap = 7.5;
-  			this.acceleration = 3.2;
-  			this.friction = 1.5;
+  			this.speedCap = 6;
+  			this.acceleration = 1.0; //was 3.2
+  			this.friction = .3;
   		}else if (this.swimming) {
   			this.speedCap = swimMaxSpeed;
   			this.acceleration = swimAcceleration;
-  			this.friction = 0.2;
+  			this.friction = 0.3;
   		}else {
-  			this.acceleration = 3.2;
-  			this.friction = 0.5;
+  			this.acceleration = 0.8;//1.2;
+  			this.friction = 0.2;
   		}
   		
   		//move according to user input
+		/*if (input[keys.up]) {
+			if (this.standing||(this.swimming && this.y>waterLevel+48&&this.y<waterLevel+52))
+			{
+				this.y=waterLevel-this.bb.height/2;
+				this.swimming=false;
+				this.vspeed = -15;
+			}else //jump
+			if (this.swimming && this.vspeed > -this.speedCap) this.vspeed -= this.acceleration; //swim up
+		}*/
 		if (input[keys.up]) {
 			if (this.standing) this.vspeed = -15; else //jump
-			if (this.swimming && this.vspeed > -this.speedCap) this.vspeed -= this.acceleration; //swim up
+			if (this.swimming && this.vspeed > -this.speedCap)
+			{
+				if(this.y+this.bb.height/2<waterLevel+8)
+				{this.vspeed=-15; this.swimming=0; this.y=waterLevel-this.bb.height/2+8;} //jump out of water
+				else
+					this.vspeed -= this.acceleration; //swim up
+			}
+		}
+		else if(!this.standing && !this.swimming && this.vspeed<0){
+			this.vspeed+=1;//Math.ceil(this.vspeed/2);
 		}
 		
 		if (input[keys.left] && this.hspeed > -this.speedCap) {this.hspeed -= this.acceleration; this.xScale = -1;} //move left
@@ -150,7 +242,7 @@ function playerObject() {
 		
 		if (input[keys.down] && this.swimming && this.vspeed < this.speedCap) this.vspeed += this.acceleration; //swim down
 		
-		if (/*!this.standing &&*/ !this.swimming && this.vspeed < 10) this.vspeed += gravity; //fall
+		if (/*!this.standing &&*/ !this.swimming && this.vspeed < this.fallSpeed) this.vspeed += gravity; //fall
 		
 		/*if (this.swimming) applyFriction(this, 4, 4, this.friction, this.friction, false); //friction
 			else applyFriction(this, 6, 14, this.friction, 0, true);*/
@@ -212,6 +304,7 @@ function playerObject() {
   	
   	this.takeDamage = function(amt) {
   		if (this.dmgTick == 0) {
+			shake=amt*4;
   			this.hp -= amt;
   			if (this.hp < 0) this.hp = 0;
   			this.dmgTick = this.dmgTickMax;
@@ -229,7 +322,6 @@ function playerObject() {
 
 function decodeLevel(str) {
 	var lev = str.split("/");
-	var dy = 0;
 	for (var i in lev) {
 		lev[i] = lev[i].split(",");
 		for (var j in lev[i])
@@ -239,27 +331,39 @@ function decodeLevel(str) {
 }
 
 function createObject(x, y, type) {
-	if (type == 0) return null;
-	var n = new obstacle(x, y, tileSize, tileSize);
-	obstacles.push(n);
-	return n;
+	switch (type) {
+		case '-':
+			return null;
+		break;
+		case 'C':
+			player.x = x;
+			player.y = y+64-player.bb.height;
+			return null;
+		default:
+			var n = new obstacle(x, y, tileSize, tileSize);
+			obstacles.push(n);
+			return n;
+		break;
+	}
 }
 
 function gameWindow() {
-	waterLevel = canvas.height-180;
-	levelWidth = 5000;
-	levelHeight = 2000;
-	level = decodeLevel("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
-	/*levelWidth = level[0].length;
-	levelHeight = level.length;*/
 	player = new playerObject();
 	player.x = 64;
 	player.y = canvas.height/2;
-	camera = new cameraObject(0, 0, player, 128, 128);
+	level = decodeLevel(Room1);//("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
+	levelWidth = level[0].length*tileSize;
+	levelHeight = level.length*tileSize;
+	console.log(level[0].length)
+	console.log(level.length)
+	waterLevel = levelHeight-180;
+	camera = new cameraObject(0, 0, player, 50, 100);
 	camera.reset = function() {
 		obstaclesOnscreen = [];
-		for (var i = Math.floor(this.y/tileSize); i < tilesV; i++) {
-			for (var j = Math.floor(this.x/tileSize); j < tilesH; j++)
+		var tileY = this.y/tileSize;
+		var tileX = this.x/tileSize;
+		for (var i = Math.floor(tileY); i < tileY+tilesV; i++) {
+			for (var j = Math.floor(tileX); j < tileX+tilesH; j++)
 				if (level[i][j] != null) obstaclesOnscreen.push(level[i][j]);
 		}
 	};
@@ -293,6 +397,8 @@ function gameWindow() {
    	context.textAlign = "center";
    	context.font = "14px Arial";
    	var txt = Math.floor(player.hp) + "/" + player.hpMax; //draw player's hp values
+	//for debugging, displays weapon firetime and current cooldown in health bar
+	//var txt = Math.floor(player.weapon.attack_cooldown) + "/" + player.weapon.attack_delay; //draw player's hp values
    	context.fillStyle = 'black';
    	context.fillText(txt, 72, 19);
    	
@@ -320,4 +426,4 @@ function game_loop() {
   	draw();
 }
 
-setInterval(game_loop, 30);
+setInterval(game_loop, 15);
