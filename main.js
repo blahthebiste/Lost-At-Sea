@@ -56,7 +56,7 @@ function obstacle(x, y, width, height) {
 	this.y = y;
 	this.width = width;
 	this.height = height;
-	this.bb = new boundingBox(width, height, 0, 0);
+	this.bb = new boundingBox(width+4, height, 0, 0);
 	this.bb.update(x, y);
 	
 	this.draw = function() {
@@ -215,11 +215,11 @@ function playerObject() {
 		}*/
 		if (input[keys.up]||input[keys.space]) {
 			if (this.standing) this.vspeed = -15; else //jump
-			if (this.swimming && this.vspeed > -this.speedCap)
+			if (this.swimming)
 			{
-				if(this.y+this.bb.height/2<waterLevel+16)
-				{this.vspeed=-15; this.swimming=0; this.y=waterLevel-this.bb.height/2+8;} //jump out of water
-				else
+				if((this.y+this.bb.height/2<waterLevel+16) && (true))
+				{this.vspeed=-15; this.swimming=0; console.log("jumped out of water"); }//this.y=waterLevel-this.bb.height/2+8;} //jump out of water
+				else if (this.vspeed > -this.speedCap)
 					this.vspeed -= this.acceleration; //swim up
 			}
 		}
