@@ -12,6 +12,7 @@ var shake=0;
 var level;
 var backgroundImg = getImg("caveBackground", 960, 540, false);
 var blockImg = getImg("blockTexture", 64, 64, false);
+var waterMin = 900;
 
 var roomIndex = 0;
 //Weapon library, stores weapon data in this format:
@@ -462,6 +463,8 @@ function swapRoom(){
 	else {
 		waterLevel += levelHeight;
 	}
+	if(waterLevel>levelHeight+waterMin)
+		waterLevel=levelHeight+waterMin;
 	movePlayer(spawnPoint.x, spawnPoint.y);
 	camera.reset();
 	roomIndex++;
