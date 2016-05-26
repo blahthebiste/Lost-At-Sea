@@ -341,6 +341,8 @@ function enemy(x, y) {
 	this.jumpMax=10;
 	
 	this.update = function() {
+		this.spr.update();
+		this.spr.setImage(this.spr.index, 0);
 		updateMotion(this);
 		this.handleCollision();
 	}
@@ -366,11 +368,11 @@ function enemy(x, y) {
   				}else*/
   				if (dir == "right") { //collided on the right
   					this.x = other.x-this.bb.width; //adjust x
-					this.reverse();
+					if (this.hspeed > 0) this.reverse();
   				}else
   				if (dir == "left") { //collided on the left
   					this.x = other.x+other.width; //adjust x
-					this.reverse();
+					if (this.hspeed < 0) this.reverse();
   				}
   			}
   		}
