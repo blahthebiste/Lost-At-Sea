@@ -9,6 +9,7 @@ var tilesH = Math.ceil(canvas.width/tileSize);
 var tilesV = Math.ceil(canvas.height/tileSize);
 var waterLevel, levelWidth, levelHeight, level, camera, player;
 var shake=0;
+var level;
 
 var roomIndex = 0;
 //Weapon library, stores weapon data in this format:
@@ -77,6 +78,7 @@ function weapon(spr, width, height, name) {
 	};
 	
 	this.fire = function(x, y){
+		movePlayer(spawnPoint.x, spawnPoint.y);
 		//REPLACE FOLLOWING LINE WITH ANIMATION CODE
 			this.spr.setImage(0, 1);
 			if(this.projectile == "melee")
@@ -259,7 +261,7 @@ function playerObject() {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
 		//Check if player is touching the exit
-		if(collisionCircleRect(exit.x, exit.y, 32, this.x, this.y, this.bb.width, this.bb.height)){
+		if(collisionCircleRect(exit.x, exit.y, 32, Math.floor(this.x), Math.floor(this.y), this.bb.width, this.bb.height)){
 			swapRoom();
 		}
   		for (var i in obstaclesOnscreen) {
@@ -336,14 +338,14 @@ function createObject(x, y, type) {
 		case 'C':
 			spawnPoint.x = x;
 			spawnPoint.y = y;
-			movePlayer(spawnPoint.x, spawnPoint.y);
 			return null;
+			break;
 		case 'E':
-		    console.log(x + " " + y);
 			exit.x = x;
 			exit.y = y;
 			console.log("Exit: " + exit.x + " " + exit.y);
 			return null;
+			break;
 		default:
 			var n = new obstacle(x, y, tileSize, tileSize);
 			obstacles.push(n);
@@ -353,32 +355,36 @@ function createObject(x, y, type) {
 }
 
 function swapRoom(){
-	roomIndex++;
 	console.log("New roomIndex: " + roomIndex + " RoomList.length: " + roomList.length);
 	if(roomIndex == roomList.length){
 		return;
 	}
 	level = decodeLevel(roomList[roomIndex]);
-		waterLevel = levelHeight-180;
 	floodRate += 0.2;
-}
+	levelWidth = level[0].length*tileSize;
+	levelHeight = level.length*tileSize;
+	console.log(level[0].length);
+	console.log(level.length);
+	waterLevel = levelHeight-180;
+	movePlayer(spawnPoint.x, spawnPoint.y);
+	camera.reset();
+	roomIndex++;
+	}
+
 
 function movePlayer(x, y){
-	player.x = x;
-	player.y = y+64-player.bb.height;
+	console.log("Moving player to " + x + ", " + y);
+	player.x = Math.floor(x);
+	player.y = Math.floor(y)+64-player.bb.height;
+	player.bb.update(player.x, player.y);
 }
 
 function gameWindow() {
 	player = new playerObject();
 	player.x = 64;
 	player.y = canvas.height/2;
-	level = decodeLevel(roomList[roomIndex]);//("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
-	levelWidth = level[0].length*tileSize;
-	levelHeight = level.length*tileSize;
-	console.log(level[0].length);
-	console.log(level.length);
-	waterLevel = levelHeight-180;
 	camera = new cameraObject(0, 0, player, 50, 100);
+	swapRoom();
 	camera.reset = function() {
 		obstaclesOnscreen = [];
 		var tileY = this.y/tileSize;
@@ -389,7 +395,7 @@ function gameWindow() {
 		}
 	};
 	camera.reset();
-	
+				
 	this.update = function() {
 		if (input[keys.esc]) {
 			windows.push(menuPause);
