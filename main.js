@@ -308,6 +308,89 @@ function playerObject() {
   	};
 }
 
+var enemies = [];
+var enemiesOnscreen = [];
+
+function enemy(x, y) {
+	this.x = x; //mostly self explanitory variables
+  	this.moveSpeed = 2.5;
+  	this.vspeed = 2;
+  	this.hspeed = this.moveSpeed;
+	this.xScale = 1;
+  	this.xScale = 1;
+  	this.hp = this.hpMax = 10;
+  	this.dmgTick = 0; //how long until can be damaged again
+  	this.dmgTickMax = 30;
+  	this.baseHeight = 98;
+  	this.bb = new boundingBox(20, 98, 0, 0); //define bounding box
+	this.y = y+64-this.bb.height;
+  	this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
+  	this.spr.row(85, 99, 2, false); //walking animation
+  	this.spr.setImage(0, 0);
+  	this.weapon = new weapon("sword", 64, 107, "sword");
+  	this.weaponX = 22;
+  	this.weaponY = -21;
+	this.fallSpeed = 9;
+	this.jumpAdd=0;
+	this.jumpMax=10;
+	
+	this.update = function() {
+		updateMotion(this);
+		this.handleCollision();
+	}
+	
+  	this.handleCollision = function() {
+		this.bb.update(this.x, this.y);
+		this.standing = false;
+		
+  		for (var i in obstaclesOnscreen) {
+  			var other = obstaclesOnscreen[i].bb;
+  			var dir = this.bb.checkCollision(other);
+  			if (dir != null) { //found a collision
+  				if (dir == "bottom" && this.vspeed >= 0) { //landed on an object
+  					this.y = other.y-this.bb.height; //stand on it
+  					this.standing = true;
+  					this.vspeed = 0;
+					if ((this.hspeed < 0 && other.x >= this.x) || (this.hspeed > 0 && other.x+other.width <= this.x+this.bb.width))
+						this.reverse();
+  				}else
+  				/*if (dir == "top" && this.vspeed < 0) { //bumped into an object above
+  					this.y = other.y+other.height; //adjust y
+  					this.vspeed = 0;
+  				}else*/
+  				if (dir == "right") { //collided on the right
+  					this.x = other.x-this.bb.width; //adjust x
+					this.reverse();
+  				}else
+  				if (dir == "left") { //collided on the left
+  					this.x = other.x+other.width; //adjust x
+					this.reverse();
+  				}
+  			}
+  		}
+ 		this.bb.update(this.x, this.y);
+  	};
+	
+	this.reverse = function() {
+		if (this.hspeed > 0) {
+  			this.hspeed = -this.moveSpeed;
+			this.xScale = -1;			
+		}else
+		if (this.hspeed < 0) {
+  			this.hspeed = this.moveSpeed;
+			this.xScale = 1;			
+		}
+	}
+
+  	this.draw = function() {
+ 	  	/*context.fillStyle = 'blue'; //draw collision box for debugging
+	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
+  		this.spr.draw(this.x-10-camera.x, this.y-camera.y, this.xScale);
+  		if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
+  			else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
+  	};	
+}
+
 function spawnPoint() {
 	this.x = 0;
 	this.y = 0;
@@ -344,6 +427,10 @@ function createObject(x, y, type) {
 			exit.x = x;
 			exit.y = y;
 			console.log("Exit: " + exit.x + " " + exit.y);
+			return null;
+			break;
+		case 'M':
+			enemies.push(new enemy(x, y));
 			return null;
 			break;
 		default:
@@ -398,6 +485,12 @@ function gameWindow() {
 			for (var j = Math.floor(tileX); j < Math.min(tileX+tilesH, level[i].length); j++)
 				if (level[i][j] != null) obstaclesOnscreen.push(level[i][j]);
 		}
+		enemiesOnscreen = [];
+		for (var i in enemies) {
+			var e = enemies[i];
+			if (e.x+e.bb.width > camera.x && e.x < camera.x+canvas.width && e.y+e.bb.height > camera.y && e.y < camera.y+canvas.height)
+				enemiesOnscreen.push(e);
+		}
 	};
 	camera.reset();
 				
@@ -407,6 +500,8 @@ function gameWindow() {
 			return;
 		}
 		
+		for (var i in enemiesOnscreen)
+			enemiesOnscreen[i].update();
 		player.update();
 		camera.update();
 	};
@@ -414,7 +509,10 @@ function gameWindow() {
 	this.draw = function() {
 		for (var i in obstaclesOnscreen)
 			obstaclesOnscreen[i].draw();
-			
+		
+		for (var i in enemiesOnscreen)
+			enemiesOnscreen[i].draw();
+		
 		player.draw();
 		
 		context.globalAlpha = 0.4;
