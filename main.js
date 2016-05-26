@@ -37,7 +37,7 @@ var swimAcceleration = 0.9;
 var swimMaxSpeed = 5;
 var breathLoss = 0.035;
 
-var floodRate = 0.0;
+var floodRate = -0.2;
 
 //watch for keys being pressed
 for (var i in keys)
@@ -365,7 +365,12 @@ function swapRoom(){
 	levelHeight = level.length*tileSize;
 	console.log(level[0].length);
 	console.log(level.length);
-	waterLevel = levelHeight-180;
+	if(roomIndex < 2){
+		waterLevel = levelHeight - 180;
+	}
+	else {
+		waterLevel += levelHeight;
+	}
 	movePlayer(spawnPoint.x, spawnPoint.y);
 	camera.reset();
 	roomIndex++;
