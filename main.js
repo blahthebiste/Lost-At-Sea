@@ -10,6 +10,7 @@ var tilesV = Math.ceil(canvas.height/tileSize);
 var waterLevel, levelWidth, levelHeight, level, camera, player;
 var shake=0;
 
+var roomIndex = 0;
 //Weapon library, stores weapon data in this format:
 //name: [damage, attack_delay (ms), projectile_type (or melee for melee weapons), melee range (in tileSizes)]
 var weapon_library = function(name){
@@ -35,7 +36,7 @@ var swimAcceleration = 0.9;
 var swimMaxSpeed = 5;
 var breathLoss = 0.035;
 
-var floodRate = 0.3;
+var floodRate = 0.0;
 
 //watch for keys being pressed
 for (var i in keys)
@@ -257,6 +258,10 @@ function playerObject() {
   	this.handleCollision = function() {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
+		//Check if player is touching the exit
+		if(collisionCircleRect(exit.x, exit.y, 32, this.x, this.y, this.width, this.height)){
+			swapRoom();
+		}
   		for (var i in obstaclesOnscreen) {
   			var other = obstaclesOnscreen[i].bb;
   			var dir = this.bb.checkCollision(other);
@@ -306,6 +311,13 @@ function spawnPoint() {
 	this.y = 0;
 }
 
+function exit() {
+	this.x = 9999;
+	this.y = 9999;
+	this.width = 32;
+	this.height = 32;
+}
+
 function decodeLevel(str) {
 	var lev = str.split("/");
 	for (var i in lev) {
@@ -326,6 +338,10 @@ function createObject(x, y, type) {
 			spawnPoint.y = y;
 			movePlayer(spawnPoint.x, spawnPoint.y);
 			return null;
+		case 'E':
+			exit.x = x;
+			exit.y = y;
+			return null;
 		default:
 			var n = new obstacle(x, y, tileSize, tileSize);
 			obstacles.push(n);
@@ -334,8 +350,9 @@ function createObject(x, y, type) {
 	}
 }
 
-function swapRoom(roomkey){
-	level = decodeLevel(roomList[roomkey]);
+function swapRoom(){
+	roomIndex++;
+	level = decodeLevel(roomList[roomIndex]);
 	floodRate += 0.2;
 }
 
@@ -348,7 +365,7 @@ function gameWindow() {
 	player = new playerObject();
 	player.x = 64;
 	player.y = canvas.height/2;
-	level = decodeLevel(Room1);//("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
+	level = decodeLevel(roomList[roomIndex]);//("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
 	levelWidth = level[0].length*tileSize;
 	levelHeight = level.length*tileSize;
 	console.log(level[0].length)
@@ -395,7 +412,7 @@ function gameWindow() {
    	context.font = "14px Arial";
    	var txt = Math.floor(player.hp) + "/" + player.hpMax; //draw player's hp values
 	//for debugging, displays weapon firetime and current cooldown in health bar
-	//var txt = Math.floor(player.weapon.attack_cooldown) + "/" + player.weapon.attack_delay; //draw player's hp values
+	//var txt = Math.floor(player.weapon.attack_cooldown) + "/" + player.weapon.attack_delay;
    	context.fillStyle = 'black';
    	context.fillText(txt, 72, 19);
    	
