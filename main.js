@@ -42,6 +42,7 @@ var swimMaxSpeed = 5;
 var breathLoss = 0.035;
 
 var floodRate = -0.2;
+var waterColor = "#0060BB";
 
 //watch for keys being pressed
 for (var i in keys)
@@ -409,6 +410,7 @@ function exit() {
 }
 
 function decodeLevel(str) {
+	enemies = [];
 	var lev = str.split("/");
 	for (var i in lev) {
 		lev[i] = lev[i].split(",");
@@ -523,8 +525,8 @@ function gameWindow() {
 		
 		player.draw();
 		
-		context.globalAlpha = 0.4;
-	  	context.fillStyle = 'blue';
+		context.globalAlpha = 0.55;
+	  	context.fillStyle = waterColor;
 	  	var dy = waterLevel-camera.y;
 	  	if (dy < 0) dy = 0;
 	  	context.fillRect(0, dy, canvas.width, canvas.height-dy);
