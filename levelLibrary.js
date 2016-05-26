@@ -21,7 +21,7 @@ G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G"
 
 var Room2 = "G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G/\
 G,G,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G/\
-G,G,-,-,-,-,-,O,G,G,G,G,G,G,G,G,G,G,G,G/\
+G,G,-,-,-,-,-,E,G,G,G,G,G,G,G,G,G,G,G,G/\
 G,-,-,-,-,-,P,P,G,G,G,G,G,G,G,G,G,G,G,G/\
 G,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G/\
 G,P,P,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G/\
