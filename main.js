@@ -394,8 +394,8 @@ function gameWindow() {
 		obstaclesOnscreen = [];
 		var tileY = this.y/tileSize;
 		var tileX = this.x/tileSize;
-		for (var i = Math.floor(tileY); i < tileY+tilesV; i++) {
-			for (var j = Math.floor(tileX); j < tileX+tilesH; j++)
+		for (var i = Math.floor(tileY); i < Math.min(tileY+tilesV, level.length); i++) {
+			for (var j = Math.floor(tileX); j < Math.min(tileX+tilesH, level[i].length); j++)
 				if (level[i][j] != null) obstaclesOnscreen.push(level[i][j]);
 		}
 	};
