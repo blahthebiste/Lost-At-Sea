@@ -10,6 +10,8 @@ var tilesV = Math.ceil(canvas.height/tileSize);
 var waterLevel, levelWidth, levelHeight, level, camera, player;
 var shake=0;
 var level;
+var backgroundImg = getImg("caveBackground", 960, 540, false);
+var blockImg = getImg("blockTexture", 64, 64, false);
 
 var roomIndex = 0;
 //Weapon library, stores weapon data in this format:
@@ -55,8 +57,9 @@ function obstacle(x, y, width, height) {
 	this.bb.update(x, y);
 	
 	this.draw = function() {
-	  	context.fillStyle = 'green';
-	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
+	  	//context.fillStyle = 'green';
+	  	//context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
+		context.drawImage(blockImg, this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
 	};
 }
 
@@ -507,6 +510,7 @@ function gameWindow() {
 	};
 	
 	this.draw = function() {
+		context.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 		for (var i in obstaclesOnscreen)
 			obstaclesOnscreen[i].draw();
 		
