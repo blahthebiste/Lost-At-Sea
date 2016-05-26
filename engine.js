@@ -111,19 +111,29 @@ function cameraObject(x, y, following, snapX, snapY) {
 		var oldx = this.x;
 		var oldy = this.y;
 		
-		if (this.following.x < this.x+this.snapX) 
+		//if ((this.following.x < this.x+this.snapX) || (this.following.x > this.x+canvas.width-this.snapX))
+			this.x = (this.x+this.following.x)/2-200;
+		//if ((this.following.y < this.y+this.snapY) || (this.following.y+this.following.bb.height > this.y+canvas.height-this.snapY))
+			this.y = (this.y+this.following.y)/2-150;
+		/*if (this.following.x < this.x+this.snapX) 
 			this.x = this.following.x-this.snapX;
 		if (this.following.x > this.x+canvas.width-this.snapX) 
 			this.x = this.following.x-canvas.width+this.snapX;
 		if (this.following.y < this.y+this.snapY) 
 			this.y = this.following.y-this.snapY;
 		if (this.following.y+this.following.bb.height > this.y+canvas.height-this.snapY) 
-			this.y = this.following.y+this.following.bb.height-canvas.height+this.snapY;
+			this.y = this.following.y+this.following.bb.height-canvas.height+this.snapY;*/
 		
 		if (this.x < 0) this.x = 0;
 		if (this.x > levelWidth-canvas.width) this.x = levelWidth-canvas.width;
 		if (this.y < 0) this.y = 0;
 		if (this.y > levelHeight-canvas.height) this.y = levelHeight-canvas.height;
+		
+		if(shake>0){
+			this.x+=Math.random()*shake-Math.random()*shake*2;
+			this.y+=Math.random()*shake-Math.random()*shake*2;
+			shake-=1;
+		}
 		
 		//otherwise it makes weird divisions between obstacles
 		this.x = Math.floor(this.x);
