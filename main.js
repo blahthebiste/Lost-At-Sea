@@ -33,6 +33,7 @@ keys.down = 'S'.charCodeAt(0);
 keys.right = 'D'.charCodeAt(0);
 //keys.testSwapRoom = 32;
 keys.esc = 27;
+keys.space=32;
 
 //player stats (affected by items)
 var swimAcceleration = 0.9;
@@ -210,11 +211,11 @@ function playerObject() {
 			}else //jump
 			if (this.swimming && this.vspeed > -this.speedCap) this.vspeed -= this.acceleration; //swim up
 		}*/
-		if (input[keys.up]) {
+		if (input[keys.up]||input[keys.space]) {
 			if (this.standing) this.vspeed = -15; else //jump
 			if (this.swimming && this.vspeed > -this.speedCap)
 			{
-				if(this.y+this.bb.height/2<waterLevel+8)
+				if(this.y+this.bb.height/2<waterLevel+16)
 				{this.vspeed=-15; this.swimming=0; this.y=waterLevel-this.bb.height/2+8;} //jump out of water
 				else
 					this.vspeed -= this.acceleration; //swim up
