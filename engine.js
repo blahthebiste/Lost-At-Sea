@@ -24,11 +24,14 @@ function sprite(src, width, height, offsetX, offsetY) {
 	this.offsetY = offsetY;
 	this.angle = 0;
 	this.color = "white";
-	this.width = width;
-	this.height = height;
+	this.width = this.img.width;
+	this.height = this.img.height;
 	
-	this.draw = function(x, y) {
+	this.draw = function(x, y, offX, offY) {
+		this.offsetX = offX;
+		this.offsetY = offY
 		context.drawImage(this.img, x-this.offsetX, y-this.offsetY, this.width, this.height);
+		//console.log(x+" "+y+" " "offsets: "+offsetX+" "+offestY);
 	};
 }
 
