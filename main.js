@@ -12,7 +12,10 @@ var shake=0;
 var level;
 var backgroundImg = getImg("caveBackground", 960, 540, false);
 var blockImg = getImg("blockTexture", 64, 64, false);
+var exitImg = new sprite("Portal", 64, 70, 0, 0);
 var waterMin = 900;
+
+var gm =true;
 
 var roomIndex = 0;
 //Weapon library, stores weapon data in this format:
@@ -119,7 +122,7 @@ function playerObject() {
   	this.vspeed = 2;
   	this.hspeed = 0;
   	this.xScale = 1;
-  	this.hp = this.hpMax = 20;
+  	this.hp = this.hpMax = 10;
   	this.breath = this.breathMax = 10;
   	this.dmgTick = 0; //how long until player can be damaged again
   	this.dmgTickMax = 30;
@@ -171,7 +174,7 @@ function playerObject() {
 	  	if (this.y+8 >= waterLevel) {
 	  		this.breath -= breathLoss;
 	  		if (this.breath < 0) this.breath = 0;
-	  		if (this.breath == 0) this.takeDamage(1);
+	  		if (this.breath == 0) this.takeDamage(0.5);
 	  	}else {
 	  		this.breath += 0.2;
 	  		if (this.breath > this.breathMax) this.breath = this.breathMax;
@@ -399,167 +402,17 @@ function enemy(x, y) {
   	};	
 }
 
-function enemyFish(){
-	this.x=canvas.width/2;
-	this.y=waterLevel;
-	//this.x=Math.random()*canvas.width;
-	//this.y=waterLevel+Math.random()*100;
-	this.maxSpeed = 2;
-	this.vspeed = 0;
-	this.hspeed = 0;
-	thisxScale = 1;
-	this.hp = this.hpMax = 10;
-	this.dmgTick = 0;
-	this.dmgTickMax = 30;
-	this.baseHeight = 98;
-  	this.bb = new boundingBox(20, 98, 0, 0); //define bounding box
-	this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
-  	this.spr.row(85, 99, 2, false); //walking animation
-  	this.spr.setImage(0, 0);
-	this.range = 48;
-	
-	this.update = function() {
-		updateMotion(this);
-		this.handleAI();
-	}
-	
-	this.handleAI = function(){
-		if((y>waterLevel+200 || this.y>player.y+this.range) && this.vspeed>-this.maxSpeed)
-			this.vspeed-=0.1;
-		else if((y<waterLevel+50 || this.y<player.y-this.range) && this.vspeed<this.maxSpeed)
-			this.vspeed-=0.1;
-		if(this.x>player.x+this.range)
-			this.hspeed-=0.1;
-		else if(this.x<player.x-this.range)
-			this.hspeed+=0.1;
-		this.bb.update(this.x, this.y);
-	}
-	
-	this.draw = function() {
- 	  	/*context.fillStyle = 'blue'; //draw collision box for debugging
-	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
-  		this.spr.draw(this.x-10-camera.x, this.y-camera.y, this.xScale);
-  	};	
-}
-
-function enemy2(x, y){
-	this.x = x; //mostly self explanitory variables
-	this.maxSpeed = 2.5;
-  	this.moveSpeed = 2.5;
-  	this.vspeed = 2;
-  	this.hspeed = this.moveSpeed;
-	this.xScale = 1;
-  	this.xScale = 1;
-  	this.hp = this.hpMax = 10;
-  	this.dmgTick = 0; //how long until can be damaged again
-  	this.dmgTickMax = 30;
-  	this.baseHeight = 98;
-  	this.bb = new boundingBox(20, 98, 0, 0); //define bounding box
-	this.y = y+64-this.bb.height;
-  	this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
-  	this.spr.row(85, 99, 2, false); //walking animation
-  	this.spr.setImage(0, 0);
-  	this.weapon = new weapon("sword", 64, 107, "sword");
-  	this.weaponX = 22;
-  	this.weaponY = -21;
-	this.fallSpeed = 9;
-	this.jumpAdd=0;
-	this.jumpMax=10;
-	this.moving=false;
-	this.attacking=0; //not bool because some enemies can have multiple attacks or attacking stages
-	this.alphaMin = 0.3;
-	this.alphaMax = 0.7;
-	this.color = "blue";
-	
-	this.update = function() {
-		updateMotion(this);
-		this.handleAI();
-		this.handleCollision();
-	}
-	
-	this.handleAI = function(){
-		if(Math.random()<.01)
-			this.moving=!this.moving;
-		if(Math.random()<.01)
-			this.reverse();
-		if((Math.abs(this.y-player.y)<48)&&(Math.abs(this.x-player.x)<256))
-		{
-			this.moving = true;
-			if(this.x>player.x+48 && this.xScale == 1)
-				this.reverse();
-			else if(this.x<player.x-48 && this.xScale == -1)
-				this.reverse();
-			//probably add attacking here idk
-		}
-		if(this.moving) this.hspeed = this.moveSpeed*this.xScale; else this.hspeed = 0;
-	}
-	
-  	this.handleCollision = function() {
-		this.bb.update(this.x, this.y);
-		this.standing = false;
-		if (this.y+8 >= waterLevel)
-			this.moveSpeed = this.maxSpeed/2;
-		else
-			this.moveSpeed = this.maxSpeed;
-		
-  		for (var i in obstaclesOnscreen) {
-  			var other = obstaclesOnscreen[i].bb;
-  			var dir = this.bb.checkCollision(other);
-  			if (dir != null) { //found a collision
-  				if (dir == "bottom" && this.vspeed >= 0) { //landed on an object
-  					this.y = other.y-this.bb.height; //stand on it
-  					this.standing = true;
-  					this.vspeed = 0;
-					if ((this.hspeed < 0 && other.x >= this.x) || (this.hspeed > 0 && other.x+other.width <= this.x+this.bb.width))
-						this.reverse();
-  				}else
-  				/*if (dir == "top" && this.vspeed < 0) { //bumped into an object above
-  					this.y = other.y+other.height; //adjust y
-  					this.vspeed = 0;
-  				}else*/
-  				if (dir == "right") { //collided on the right
-  					this.x = other.x-this.bb.width; //adjust x
-					this.reverse();
-  				}else
-  				if (dir == "left") { //collided on the left
-  					this.x = other.x+other.width; //adjust x
-					this.reverse();
-  				}
-  			}
-  		}
- 		this.bb.update(this.x, this.y);
-  	};
-	
-	this.reverse = function() {
-		if (this.hspeed > 0) {
-  			this.hspeed = -this.moveSpeed;
-			this.xScale = -1;			
-		}else
-		if (this.hspeed < 0) {
-  			this.hspeed = this.moveSpeed;
-			this.xScale = 1;			
-		}
-	}
-
-  	this.draw = function() {
- 	  	/*context.fillStyle = 'blue'; //draw collision box for debugging
-	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
-  		this.spr.draw(this.x-10-camera.x, this.y-camera.y, this.xScale);
-  		if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
-  			else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
-  	};	
-}
-
 function spawnPoint() {
 	this.x = 0;
 	this.y = 0;
 }
 
-function exit() {
-	this.x = 9999;
-	this.y = 9999;
-	this.width = 32;
-	this.height = 32;
+var exit = {
+	x: 9999,
+	y: 9999,
+	width: 32,
+	height: 32,
+	spr: exitImg
 }
 
 function decodeLevel(str) {
@@ -685,6 +538,12 @@ function gameWindow() {
 	  	context.fillRect(0, dy, canvas.width, canvas.height-dy);
 	  	context.globalAlpha = 1;
 	  	
+	exit.spr.draw(exit.x-10, exit.y-20, camera.x, camera.y);
+	if(gm) {
+		console.log(exit.x + " "+exit.y);
+		console.log(exitImg.offsetX, exitImg.offsetY);
+			gm = false;
+	}
    	context.fillStyle = 'red';
    	context.fillRect(8, 6, player.hp*(128/player.hpMax), 16); //draw player's hp bar
    	context.textAlign = "center";
@@ -713,6 +572,7 @@ function updateWater(){
 function update() {
 	updateWindows();
 	updateWater();
+	//exit.update();
 }
 
 function draw() {
