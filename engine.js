@@ -33,6 +33,14 @@ function sprite(src, width, height, offsetX, offsetY) {
 		context.drawImage(this.img, x-this.offsetX, y-this.offsetY, this.width, this.height);
 		//console.log(x+" "+y+" " "offsets: "+offsetX+" "+offestY);
 	};
+	
+	this.drawScaled = function(x, y, xScale) {
+  		if (xScale == undefined) xScale = 1;
+  		context.save();
+  		if (xScale == -1) {context.translate(x, 0); x = 0; context.scale(-1, 1);}
+  		context.drawImage(this.img, x-this.offsetX, y-this.offsetY, this.width, this.height);
+  		context.restore();
+  	};
 }
 
 //keeps track of different animations in the same image
