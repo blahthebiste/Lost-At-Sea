@@ -128,7 +128,7 @@ function playerObject() {
   	this.hp = this.hpMax = 10;
   	this.breath = this.breathMax = 10;
   	this.dmgTick = 0; //how long until player can be damaged again
-  	this.dmgTickMax = 60;
+  	this.dmgTickMax = 70;
   	this.standing = false;
   	this.swimming = false;
   	this.baseHeight = 98;
@@ -344,11 +344,12 @@ function enemy(x, y) {
   	this.dmgTick = 0; //how long until can be damaged again
   	this.dmgTickMax = 30;
   	this.baseHeight = 98;
-  	this.bb = new boundingBox(20, 98, 0, 0); //define bounding box
+  	this.bb = new boundingBox(46, 60, 0, 0); //define bounding box
 	this.y = y+64-this.bb.height;
-  	this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
-  	this.spr.row(85, 99, 2, false); //walking animation
-  	this.spr.setImage(0, 0);
+  	this.spr = new sprite("ghost", 46, 60, 0, 0);
+	//this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
+  	//this.spr.row(85, 99, 2, false); //walking animation
+  	//this.spr.setImage(0, 0);
   	this.weapon = new weapon("sword", 64, 107, "sword");
   	this.weaponX = 22;
   	this.weaponY = -21;
@@ -358,8 +359,8 @@ function enemy(x, y) {
 	this.contactDamage = 1;
 	
 	this.update = function() {
-		this.spr.update();
-		this.spr.setImage(this.spr.index, 0);
+		//this.spr.update();
+		//this.spr.setImage(this.spr.index, 0);
 		updateMotion(this);
 		this.handleCollision();
 	}
@@ -410,9 +411,9 @@ function enemy(x, y) {
   	this.draw = function() {
  	  	/*context.fillStyle = 'blue'; //draw collision box for debugging
 	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
-  		this.spr.draw(this.x-10-camera.x, this.y-camera.y, this.xScale);
-  		if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
-  			else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
+  		this.spr.drawScaled(this.x-10-camera.x, this.y-camera.y, this.xScale);
+  		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
+  			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
   	};	
 }
 
@@ -518,7 +519,6 @@ function gameWindow() {
 		for (var i in enemies) {
 			var e = enemies[i];
 			if (e.x+e.bb.width > camera.x && e.x < camera.x+canvas.width && e.y+e.bb.height > camera.y && e.y < camera.y+canvas.height){
-				console.log("adding enemy to enemiesOnscreen.");
 				enemiesOnscreen.push(e);
 			}
 		}
