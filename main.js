@@ -14,8 +14,10 @@ var backgroundImg = getImg("caveBackground", 960, 540, false);
 var blockImg = getImg("blockTexture", 64, 64, false);
 var exitImg = new sprite("Portal", 64, 70, 0, 0);
 var waterMin = 900;
-
-var gm =true;
+var time = 0;
+var displayWinScreen = false;
+var displayLoseScreen = false;
+var gameOver = false;
 
 var roomIndex = 0;
 //Weapon library, stores weapon data in this format:
@@ -176,6 +178,9 @@ function playerObject() {
 	};
 	
   	this.update = function() {
+		if(this.hp < 1){
+			setGameOver("lose");
+		}
   		if (this.dmgTick > 0) this.dmgTick -= 1;
 		if (this.weapon.attack_cooldown > 0) this.weapon.attack_cooldown -= 1;
 		//Attack now takes mouse1
@@ -299,7 +304,7 @@ function playerObject() {
 		if(collisionCircleRect(exit.x, exit.y, 1, Math.floor(this.x), Math.floor(this.y), this.bb.width, this.bb.height)){
 			if(roomIndex == roomList.length){
 				//display win screen
-				
+				setGameOver("win");
 			}
 			else swapRoom();
 		}
@@ -537,6 +542,16 @@ function movePlayer(x, y){
 	player.bb.update(player.x, player.y);
 }
 
+function setGameOver(state){
+	gameOver = true;
+	if(state == "win"){
+		displayWinScreen = true;
+	}
+	if(state == "lose"){
+		displayLoseScreen = true;
+	}
+}
+
 function gameWindow() {
 	player = new playerObject();
 	player.x = 64;
@@ -620,13 +635,25 @@ function updateWater(){
 }
 
 function update() {
-	updateWindows();
-	updateWater();
-	//exit.update();
+	if(!gameOver){
+		time++;
+		updateWindows();
+		updateWater();
+	}
 }
 
 function draw() {
-	drawWindows();
+		drawWindows();
+	if(displayWinScreen){
+		context.fillStyle = 'green';
+		context.font = "20px Arial";
+		context.fillText("Congratulations! You completed the game in "+Math.round(time*2/300)+" seconds, with "+player.hp+ " health remaining.", 380, 300);
+	}
+	if(displayLoseScreen){
+		context.fillStyle = 'red';
+		context.font = "20px Arial";
+		context.fillText("GAME OVER!", 380, 300);
+	}
 }
 
 function game_loop() {
