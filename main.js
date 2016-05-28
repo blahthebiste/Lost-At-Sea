@@ -47,6 +47,9 @@ var breathLoss = 0.035;
 var floodRate = -0.2;
 var waterColor = "#0060BB";
 
+var enemies = [];
+var enemiesOnscreen = [];
+
 //watch for keys being pressed
 for (var i in keys)
 	watchKey(keys[i]);
@@ -125,7 +128,7 @@ function playerObject() {
   	this.hp = this.hpMax = 10;
   	this.breath = this.breathMax = 10;
   	this.dmgTick = 0; //how long until player can be damaged again
-  	this.dmgTickMax = 30;
+  	this.dmgTickMax = 60;
   	this.standing = false;
   	this.swimming = false;
   	this.baseHeight = 98;
@@ -174,7 +177,7 @@ function playerObject() {
 	  	if (this.y+8 >= waterLevel) {
 	  		this.breath -= breathLoss;
 	  		if (this.breath < 0) this.breath = 0;
-	  		if (this.breath == 0) this.takeDamage(0.5);
+	  		if (this.breath == 0) this.takeDamage(1);
 	  	}else {
 	  		this.breath += 0.2;
 	  		if (this.breath > this.breathMax) this.breath = this.breathMax;
@@ -270,8 +273,12 @@ function playerObject() {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
 		//Check if player is touching the exit
-		if(collisionCircleRect(exit.x, exit.y, 32, Math.floor(this.x), Math.floor(this.y), this.bb.width, this.bb.height)){
-			swapRoom();
+		if(collisionCircleRect(exit.x, exit.y, 1, Math.floor(this.x), Math.floor(this.y), this.bb.width, this.bb.height)){
+			if(roomIndex == roomList.length){
+				//display win screen
+				
+			}
+			else swapRoom();
 		}
   		for (var i in obstaclesOnscreen) {
   			var other = obstaclesOnscreen[i].bb;
@@ -297,11 +304,20 @@ function playerObject() {
   			}
   		}
  		this.bb.update(this.x, this.y);
+		for (var i in enemiesOnscreen) {
+			var other = enemiesOnscreen[i].bb;
+			var dir = this.bb.checkCollision(other);
+  			if (dir != null) { //found a collision
+				console.log("Collision with enemy detected!");
+				this.takeDamage(enemiesOnscreen[i].contactDamage);
+			}
+		}
   	};
   	
   	this.takeDamage = function(amt) {
   		if (this.dmgTick == 0) {
 			shake=amt*4;
+			console.log(amt);
   			this.hp -= amt;
   			if (this.hp < 0) this.hp = 0;
   			this.dmgTick = this.dmgTickMax;
@@ -316,9 +332,6 @@ function playerObject() {
   			else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
   	};
 }
-
-var enemies = [];
-var enemiesOnscreen = [];
 
 function enemy(x, y) {
 	this.x = x; //mostly self explanitory variables
@@ -342,6 +355,7 @@ function enemy(x, y) {
 	this.fallSpeed = 9;
 	this.jumpAdd=0;
 	this.jumpMax=10;
+	this.contactDamage = 1;
 	
 	this.update = function() {
 		this.spr.update();
@@ -503,8 +517,10 @@ function gameWindow() {
 		enemiesOnscreen = [];
 		for (var i in enemies) {
 			var e = enemies[i];
-			if (e.x+e.bb.width > camera.x && e.x < camera.x+canvas.width && e.y+e.bb.height > camera.y && e.y < camera.y+canvas.height)
+			if (e.x+e.bb.width > camera.x && e.x < camera.x+canvas.width && e.y+e.bb.height > camera.y && e.y < camera.y+canvas.height){
+				console.log("adding enemy to enemiesOnscreen.");
 				enemiesOnscreen.push(e);
+			}
 		}
 	};
 	camera.reset();
@@ -529,6 +545,8 @@ function gameWindow() {
 		for (var i in enemiesOnscreen)
 			enemiesOnscreen[i].draw();
 		
+		//draw exit portal, then player
+		exit.spr.draw(exit.x-10, exit.y-20, camera.x, camera.y);
 		player.draw();
 		
 		context.globalAlpha = 0.55;
@@ -538,12 +556,7 @@ function gameWindow() {
 	  	context.fillRect(0, dy, canvas.width, canvas.height-dy);
 	  	context.globalAlpha = 1;
 	  	
-	exit.spr.draw(exit.x-10, exit.y-20, camera.x, camera.y);
-	if(gm) {
-		console.log(exit.x + " "+exit.y);
-		console.log(exitImg.offsetX, exitImg.offsetY);
-			gm = false;
-	}
+
    	context.fillStyle = 'red';
    	context.fillRect(8, 6, player.hp*(128/player.hpMax), 16); //draw player's hp bar
    	context.textAlign = "center";
