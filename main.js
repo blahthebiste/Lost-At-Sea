@@ -23,7 +23,7 @@ var roomIndex = 0;
 var weapon_library = function(name){
 	switch (name){
 	case "sword": 
-		return [ 15, 17, "melee", 1];
+		return [ 15, 17, "melee", 1.5];
 	case "hatchet": 
 		return [15, 11, "melee", 0.65];
 	}
@@ -90,7 +90,6 @@ function weapon(spr, width, height, name) {
 	};
 	
 	this.fire = function(x, y){
-		movePlayer(spawnPoint.x, spawnPoint.y);
 		//REPLACE FOLLOWING LINE WITH ANIMATION CODE
 			this.spr.setImage(0, 1);
 			if(this.projectile == "melee")
@@ -109,14 +108,37 @@ function weapon(spr, width, height, name) {
 }
 
 var applyDamage = function(damage, aoe, x, y){
-	//tbi
+	var damageBox = new boundingBox(aoe, aoe, x, y);
+	console.log("applying "+damage+" damage to "+x+" "+y+" with aoe "+aoe);
+	displayedHitBox.x = x;
+	damageBox.x = x;
+	displayedHitBox.y = y; 
+	damageBox.y = y;
+	displayedHitBox.size = aoe;
+	for (var i in enemiesOnscreen) {
+			var other = enemiesOnscreen[i].bb;
+			var dir = damageBox.checkCollision(other);
+  			if (dir != null) { //hit an enemy
+			console.log("Hit an enemy!");
+				enemiesOnscreen[i].takeDamage(damage);
+			}
+		}
 };
 
 var spawn_projectile = function(damage, projectileName, x, y){
 	//tbi
 };
 
-//obstacles.push(new obstacle(0, canvas.height-200, 400, 64));
+//For debuging purposes
+var displayedHitBox = {
+	x: 9999,
+	y: 9999,
+	size: 0,
+	draw: function(){
+		context.fillStyle = "#FF0000"
+		context.fillRect(this.x-camera.x, this.y-camera.y, this.size, this.size);
+	}
+}
 
 function playerObject() {
 	this.x = canvas.width/2; //mostly self explanitory variables
@@ -148,7 +170,8 @@ function playerObject() {
   	
 	this.performAttack = function(){
 		//apply damage based on weapon
-		this.weapon.fire(this.x, this.y);
+		if(this.xScale == -1) this.weapon.fire(this.x-this.weapon.range*tileSize+this.bb.width, this.y);
+		else this.weapon.fire(this.x, this.y);
 		this.weapon.attack_cooldown = this.weapon.attack_delay;		
 	};
 	
@@ -358,9 +381,17 @@ function enemy(x, y) {
 	this.jumpMax=10;
 	this.contactDamage = 1;
 	
+	this.takeDamage = function(dmg){
+		this.hp -= dmg;
+	}
+	
 	this.update = function() {
 		//this.spr.update();
 		//this.spr.setImage(this.spr.index, 0);
+		if(this.hp < 1){
+			console.log("An enemy has been slain!");
+			this.die();
+		}
 		updateMotion(this);
 		this.handleCollision();
 	}
@@ -415,6 +446,11 @@ function enemy(x, y) {
   		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
   	};	
+	
+	this.die = function(){
+		var index = enemies.indexOf(this);
+		enemies.splice(index, 1);
+	}
 }
 
 function spawnPoint() {
@@ -547,6 +583,7 @@ function gameWindow() {
 		
 		//draw exit portal, then player
 		exit.spr.draw(exit.x-10, exit.y-20, camera.x, camera.y);
+		//displayedHitBox.draw();
 		player.draw();
 		
 		context.globalAlpha = 0.55;
