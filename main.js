@@ -424,8 +424,16 @@ function enemy(x, y, type) {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
 		
-  		for (var i in obstaclesOnscreen) {
-  			var other = obstaclesOnscreen[i].bb;
+		var tileY = Math.floor(this.y/tileSize);
+		var tileX = Math.floor(this.x/tileSize);
+		var collidables = [];
+		for (var i = tileY-2; i < Math.min(tileY+2, level.length); i++) {
+			for (var j = tileX-2; j < Math.min(tileX+2, level[i].length); j++)
+				if (level[i][j] != null) collidables.push(level[i][j]);
+		}
+		
+  		for (var i in collidables) {
+  			var other = collidables[i].bb;
   			var dir = this.bb.checkCollision(other);
   			if (dir != null) { //found a collision
   				if (dir == "bottom" && this.vspeed >= 0) { //landed on an object
