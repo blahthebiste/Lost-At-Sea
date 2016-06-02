@@ -16,7 +16,7 @@ var exitImg = new sprite("Portal", 64, 70, 0, 0);
 var waterMin = 900;
 var time = 0;
 //danger is a measure of how likely enemies will spawn in the water.
-var danger = 1000;
+var danger = 0;
 var displayWinScreen = false;
 var displayLoseScreen = false;
 var gameOver = false;
@@ -572,7 +572,7 @@ function updateEnemySpawns(){
 	if(enemies.length >= enemyCap) {
 		return;
 	}
-	var randomNumber = 1000;//Math.floor(Math.random()*2000 + 1200);
+	var randomNumber = Math.floor(Math.random()*1000 + 1200);
 	if(danger*(1+floodRate) >= randomNumber){
 		spawnFish();
 		danger = 0;
