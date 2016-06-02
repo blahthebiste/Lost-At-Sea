@@ -539,6 +539,7 @@ function swapRoom(){
 		return;
 	}
 	level = decodeLevel(roomList[roomIndex]);
+	if(floodRate < 1)
 	floodRate += 0.2;
 	levelWidth = level[0].length*tileSize;
 	levelHeight = level.length*tileSize;
