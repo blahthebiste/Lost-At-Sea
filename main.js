@@ -78,6 +78,8 @@ function obstacle(x, y, width, height) {
 }
 
 function weapon(spr, width, height, name) {
+	this.activeFrames = 0;
+	this.firing = false;
 	this.spr = new imageStrip(spr, width, height);
 	this.spr.row(20, 72, 1);
 	this.spr.row(0, height-72, 1, true);
@@ -110,10 +112,21 @@ function weapon(spr, width, height, name) {
 	this.reset_animation = function(){
 		this.spr.setImage(0, 0);
 	};
+	
+	this.update = function(x,y){
+		if(this.firing) {
+			this.fire(x,y);
+			this.activeFrames--;
+		}
+		if(this.activeFrames == 0){
+			this.firing = false;
+			this.reset_animation();
+		}
+	}
 }
 
-var applyDamage = function(damage, aoe, x, y){
-	var damageBox = new boundingBox(aoe, aoe, x, y);
+var applyDamage = function(damage, aoe, x, y){	
+    var damageBox = new boundingBox(aoe, aoe, x, y);
 	console.log("applying "+damage+" damage to "+x+" "+y+" with aoe "+aoe);
 	//displayedHitBox.x = x;
 	damageBox.x = x;
@@ -175,12 +188,18 @@ function playerObject() {
   	
 	this.performAttack = function(){
 		//apply damage based on weapon
+		this.weapon.activeFrames = 45;
+		this.weapon.firing = true;
 		if(this.xScale == -1) this.weapon.fire(this.x-this.weapon.range*tileSize+this.bb.width, this.y);
 		else this.weapon.fire(this.x, this.y);
-		this.weapon.attack_cooldown = this.weapon.attack_delay;		
+		this.weapon.attack_cooldown = this.weapon.attack_delay;
 	};
 	
   	this.update = function() {
+		if(this.weapon.firing){
+			if(this.xScale == -1) this.weapon.update(this.x-this.weapon.range*tileSize+this.bb.width, this.y);
+			else this.weapon.update(this.x, this.y);
+		}
 		if(this.hp < 1){
 			setGameOver("lose");
 		}
@@ -188,7 +207,7 @@ function playerObject() {
 		if (this.weapon.attack_cooldown > 0) this.weapon.attack_cooldown -= 1;
 		//Attack now takes mouse1
   		if ((this.weapon.attack_cooldown < 1) && input.down) this.performAttack();
-  			else this.weapon.reset_animation();
+  			//else this.weapon.reset_animation();
   		
   		//check if the player is in water
   		if (this.y+this.bb.height/2 > waterLevel) {
@@ -486,6 +505,8 @@ function enemy(x, y, type) {
 	this.die = function(){
 		var index = enemies.indexOf(this);
 		enemies.splice(index, 1);
+		var index = enemiesOnscreen.indexOf(this);
+		enemiesOnscreen.splice(index, 1);
 	}
 }
 
