@@ -662,8 +662,8 @@ function gameWindow() {
 			return;
 		}
 		
-		for (var i in enemiesOnscreen)
-			enemiesOnscreen[i].update();
+		for (var i in enemies)
+			enemies[i].update();
 		player.update();
 		camera.update();
 	};
