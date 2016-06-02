@@ -8,37 +8,30 @@ var tileSize = 64;
 var tilesH = Math.ceil(canvas.width/tileSize);
 var tilesV = Math.ceil(canvas.height/tileSize);
 var waterLevel, levelWidth, levelHeight, level, camera, player;
-var Room1 = "G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,G,G,G,G/\
-			 G,G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G/\
-			 G,G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G/\
-			 G,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G/\
-			 G,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G/\
-			 G,-,-,-,-,-,-,P,P,G,G,G,G,G,G,G,G,G,G,G,G,G/\
-			 G,G,G,G,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G/\
-			 G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G/\
-			 G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G/\
-			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G,G/\
-			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G,G/\
-			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,G,G,G/\
-			 G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G,G,G,G/\
-			 G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,-,-,G,G,G,G,G/\
-			 G,G,G,G,G,G,G,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G/\
-			 G,G,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G/\
-			 G,G,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G/\
-			 G,G,-,-,-,-,-,-,-,P,P,G,G,G,G,G,G,G,G,G,G,G/\
-			 G,G,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G/\
-			 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G"
+var shake=0;
+var level;
+var backgroundImg = getImg("caveBackground", 960, 540, false);
+var blockImg = getImg("blockTexture", 64, 64, false);
+var exitImg = new sprite("Portal", 64, 70, 0, 0);
+var waterMin = 900;
+var time = 0;
+//danger is a measure of how likely enemies will spawn in the water.
+var danger = 1000;
+var displayWinScreen = false;
+var displayLoseScreen = false;
+var gameOver = false;
 
+var roomIndex = 0;
 //Weapon library, stores weapon data in this format:
 //name: [damage, attack_delay (ms), projectile_type (or melee for melee weapons), melee range (in tileSizes)]
 var weapon_library = function(name){
 	switch (name){
 	case "sword": 
-		return [ 15, 17, "melee", 1];
+		return [ 15, 17, "melee", 1.5];
 	case "hatchet": 
 		return [15, 11, "melee", 0.65];
 	}
-}
+};
 
 //user input
 var keys = {};
@@ -46,14 +39,20 @@ keys.up = 'W'.charCodeAt(0);
 keys.left = 'A'.charCodeAt(0);
 keys.down = 'S'.charCodeAt(0);
 keys.right = 'D'.charCodeAt(0);
-//keys.attack = 32;
+//keys.testSwapRoom = 32;
 keys.esc = 27;
+keys.space=32;
 
 //player stats (affected by items)
 var swimAcceleration = 0.9;
 var swimMaxSpeed = 5;
 var breathLoss = 0.035;
 
+var floodRate = -0.2;
+var waterColor = "#0060BB";
+
+var enemies = [];
+var enemiesOnscreen = [];
 
 //watch for keys being pressed
 for (var i in keys)
@@ -67,12 +66,13 @@ function obstacle(x, y, width, height) {
 	this.y = y;
 	this.width = width;
 	this.height = height;
-	this.bb = new boundingBox(width, height, 0, 0);
+	this.bb = new boundingBox(width+4, height, 0, 0);
 	this.bb.update(x, y);
 	
 	this.draw = function() {
-	  	context.fillStyle = 'green';
-	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
+	  	//context.fillStyle = 'green';
+	  	//context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
+		context.drawImage(blockImg, this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
 	};
 }
 
@@ -103,23 +103,46 @@ function weapon(spr, width, height, name) {
 			else {
 				spawn_projectile(this.damage, this.projectile, x, y);
 			}
-	}
+	};
 	
 	//TBI
 	this.reset_animation = function(){
 		this.spr.setImage(0, 0);
-	}
+	};
 }
 
 var applyDamage = function(damage, aoe, x, y){
-	//tbi
-}
+	var damageBox = new boundingBox(aoe, aoe, x, y);
+	console.log("applying "+damage+" damage to "+x+" "+y+" with aoe "+aoe);
+	//displayedHitBox.x = x;
+	damageBox.x = x;
+	//displayedHitBox.y = y; 
+	damageBox.y = y;
+	//displayedHitBox.size = aoe;
+	for (var i in enemiesOnscreen) {
+			var other = enemiesOnscreen[i].bb;
+			var dir = damageBox.checkCollision(other);
+  			if (dir != null) { //hit an enemy
+			console.log("Hit an enemy!");
+				enemiesOnscreen[i].takeDamage(damage);
+			}
+		}
+};
 
 var spawn_projectile = function(damage, projectileName, x, y){
 	//tbi
-}
+};
 
-//obstacles.push(new obstacle(0, canvas.height-200, 400, 64));
+//For debuging purposes
+var displayedHitBox = {
+	x: 9999,
+	y: 9999,
+	size: 46,
+	draw: function(){
+		context.fillStyle = "#FF0000"
+		context.fillRect(this.x-camera.x, this.y-camera.y, this.size, this.size);
+	}
+}
 
 function playerObject() {
 	this.x = canvas.width/2; //mostly self explanitory variables
@@ -131,7 +154,7 @@ function playerObject() {
   	this.hp = this.hpMax = 10;
   	this.breath = this.breathMax = 10;
   	this.dmgTick = 0; //how long until player can be damaged again
-  	this.dmgTickMax = 30;
+  	this.dmgTickMax = 70;
   	this.standing = false;
   	this.swimming = false;
   	this.baseHeight = 98;
@@ -146,14 +169,20 @@ function playerObject() {
   	this.weaponX = 22;
   	this.weaponY = -21;
 	this.fallSpeed = 9;
+	this.jumpAdd=0;
+	this.jumpMax=10;
   	
 	this.performAttack = function(){
 		//apply damage based on weapon
-		this.weapon.fire(this.x, this.y);
+		if(this.xScale == -1) this.weapon.fire(this.x-this.weapon.range*tileSize+this.bb.width, this.y);
+		else this.weapon.fire(this.x, this.y);
 		this.weapon.attack_cooldown = this.weapon.attack_delay;		
-	}
+	};
 	
   	this.update = function() {
+		if(this.hp < 1){
+			setGameOver("lose");
+		}
   		if (this.dmgTick > 0) this.dmgTick -= 1;
 		if (this.weapon.attack_cooldown > 0) this.weapon.attack_cooldown -= 1;
 		//Attack now takes mouse1
@@ -172,12 +201,13 @@ function playerObject() {
 	  			if (input[keys.up]) this.vspeed = -7;
 	  		}
   		}
+  		if (this.swimming) this.standing = false;
   		
   		//check if the player's head is underwater
 	  	if (this.y+8 >= waterLevel) {
 	  		this.breath -= breathLoss;
 	  		if (this.breath < 0) this.breath = 0;
-	  		if (this.breath == 0) this.takeDamage(0.5);
+	  		if (this.breath == 0) this.takeDamage(1);
 	  	}else {
 	  		this.breath += 0.2;
 	  		if (this.breath > this.breathMax) this.breath = this.breathMax;
@@ -198,21 +228,39 @@ function playerObject() {
   		//player moves at different speed if walking, swimming or jumping
   		if (this.standing) {
   			this.speedCap = 6;
-  			this.acceleration = 3.2;
-  			this.friction = 1;
+  			this.acceleration = 1.0; //was 3.2
+  			this.friction = .3;
   		}else if (this.swimming) {
   			this.speedCap = swimMaxSpeed;
   			this.acceleration = swimAcceleration;
   			this.friction = 0.3;
   		}else {
-  			this.acceleration = 1.2;
+  			this.acceleration = 0.8;//1.2;
   			this.friction = 0.2;
   		}
   		
   		//move according to user input
-		if (input[keys.up]) {
-			if (this.standing) this.vspeed = -15; else //jump
+		/*if (input[keys.up]) {
+			if (this.standing||(this.swimming && this.y>waterLevel+48&&this.y<waterLevel+52))
+			{
+				this.y=waterLevel-this.bb.height/2;
+				this.swimming=false;
+				this.vspeed = -15;
+			}else //jump
 			if (this.swimming && this.vspeed > -this.speedCap) this.vspeed -= this.acceleration; //swim up
+		}*/
+		if (input[keys.up]||input[keys.space]) {
+			if (this.standing) this.vspeed = -15; else //jump
+			if (this.swimming)
+			{
+				if((this.y+this.bb.height/2<waterLevel+16) && (true))
+				{this.vspeed=-15; this.swimming=0; console.log("jumped out of water"); }//this.y=waterLevel-this.bb.height/2+8;} //jump out of water
+				else if (this.vspeed > -this.speedCap)
+					this.vspeed -= this.acceleration; //swim up
+			}
+		}
+		else if(!this.standing && !this.swimming && this.vspeed<0){
+			this.vspeed+=1;//Math.ceil(this.vspeed/2);
 		}
 		
 		if (input[keys.left] && this.hspeed > -this.speedCap) {this.hspeed -= this.acceleration; this.xScale = -1;} //move left
@@ -254,6 +302,14 @@ function playerObject() {
   	this.handleCollision = function() {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
+		//Check if player is touching the exit
+		if(collisionCircleRect(exit.x, exit.y, 1, Math.floor(this.x), Math.floor(this.y), this.bb.width, this.bb.height)){
+			if(roomIndex == roomList.length){
+				//display win screen
+				setGameOver("win");
+			}
+			else swapRoom();
+		}
   		for (var i in obstaclesOnscreen) {
   			var other = obstaclesOnscreen[i].bb;
   			var dir = this.bb.checkCollision(other);
@@ -278,10 +334,20 @@ function playerObject() {
   			}
   		}
  		this.bb.update(this.x, this.y);
+		for (var i in enemiesOnscreen) {
+			var other = enemiesOnscreen[i].bb;
+			var dir = this.bb.checkCollision(other);
+  			if (dir != null) { //found a collision
+				console.log("Collision with enemy detected!");
+				this.takeDamage(enemiesOnscreen[i].contactDamage);
+			}
+		}
   	};
   	
   	this.takeDamage = function(amt) {
   		if (this.dmgTick == 0) {
+			shake=amt*4;
+			console.log(amt);
   			this.hp -= amt;
   			if (this.hp < 0) this.hp = 0;
   			this.dmgTick = this.dmgTickMax;
@@ -297,9 +363,140 @@ function playerObject() {
   	};
 }
 
+function enemy(x, y, type) {
+	this.x = x; //mostly self explanitory variables
+  	this.moveSpeed = 2.5;
+  	this.hspeed = this.moveSpeed;
+	this.xScale = 1;
+  	this.xScale = 1;
+  	this.hp = this.hpMax = 10;
+  	this.dmgTick = 0; //how long until can be damaged again
+  	this.dmgTickMax = 30;
+  	this.baseHeight = 98;
+    this.type = type;
+	if(type == "fish"){
+		this.spr = new sprite("anglerFish", 60, 28, 0, 0);
+		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
+			this.vspeed = -0.5;
+	}
+	else {
+		this.spr = new sprite("ghost", 46, 60, 0, 0);
+		this.bb = new boundingBox(46, 60, 0, 0); //define bounding box
+			this.vspeed = 0;
+	}
+  		this.y = y+64-this.bb.height;
+	//this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
+  	//this.spr.row(85, 99, 2, false); //walking animation
+  	//this.spr.setImage(0, 0);
+  	this.weapon = new weapon("sword", 64, 107, "sword");
+  	this.weaponX = 22;
+  	this.weaponY = -21;
+	this.jumpAdd=0;
+	this.jumpMax=10;
+	this.contactDamage = 1;
+	
+	this.takeDamage = function(dmg){
+		this.hp -= dmg;
+	}
+	
+	this.update = function() {
+		//this.spr.update();
+		//this.spr.setImage(this.spr.index, 0);
+		//Special swimming mechanics for fish:
+		if(this.type == "fish"){
+			if(this.y < waterLevel) {
+				this.vspeed += 0.3;
+			}
+			else this.vspeed += Math.random() -0.5;
+		}
+		if(this.hp < 1){
+			console.log("An enemy has been slain!");
+			this.die();
+		}
+		updateMotion(this);
+		displayedHitBox.x = this.x;
+		displayedHitBox.y = this.y;
+		this.handleCollision();
+	}
+	
+  	this.handleCollision = function() {
+		this.bb.update(this.x, this.y);
+		this.standing = false;
+		
+  		for (var i in obstaclesOnscreen) {
+  			var other = obstaclesOnscreen[i].bb;
+  			var dir = this.bb.checkCollision(other);
+  			if (dir != null) { //found a collision
+  				if (dir == "bottom" && this.vspeed >= 0) { //landed on an object
+  					this.y = other.y-this.bb.height; //stand on it
+  					this.standing = true;
+  					this.vspeed = 0;
+					if ((this.hspeed < 0 && other.x >= this.x) || (this.hspeed > 0 && other.x+other.width <= this.x+this.bb.width))
+						this.reverse();
+  				}else
+  				/*if (dir == "top" && this.vspeed < 0) { //bumped into an object above
+  					this.y = other.y+other.height; //adjust y
+  					this.vspeed = 0;
+  				}else*/
+  				if (dir == "right") { //collided on the right
+  					this.x = other.x-this.bb.width; //adjust x
+					if (this.hspeed > 0) this.reverse();
+  				}else
+  				if (dir == "left") { //collided on the left
+  					this.x = other.x+other.width; //adjust x
+					if (this.hspeed < 0) this.reverse();
+  				}
+				if (dir == "top") { //collided on the top, usually for fish
+					this.y = other.y+other.height;
+					this.vspeed *= -1; //Bounce downward
+				}
+  			}
+  		}
+ 		this.bb.update(this.x, this.y);
+  	};
+	
+	this.reverse = function() {
+		if (this.hspeed > 0) {
+  			this.hspeed = -this.moveSpeed;
+			this.xScale = -1;			
+		}else
+		if (this.hspeed < 0) {
+  			this.hspeed = this.moveSpeed;
+			this.xScale = 1;			
+		}
+	}
+
+  	this.draw = function() {
+ 	  	/*context.fillStyle = 'blue'; //draw collision box for debugging
+	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
+  		this.spr.drawScaled(this.x+46-camera.x, this.y-camera.y, this.xScale);
+  		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
+  			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
+  	};	
+	
+	this.die = function(){
+		var index = enemies.indexOf(this);
+		enemies.splice(index, 1);
+	}
+}
+
+function spawnPoint() {
+	this.x = 0;
+	this.y = 0;
+}
+
+var exit = {
+	x: 9999,
+	y: 9999,
+	width: 32,
+	height: 32,
+	spr: exitImg
+}
+
 function decodeLevel(str) {
+	enemies = [];
+	obstacles = [];
 	var lev = str.split("/");
-	var dy = 0; //?
 	for (var i in lev) {
 		lev[i] = lev[i].split(",");
 		for (var j in lev[i])
@@ -309,62 +506,195 @@ function decodeLevel(str) {
 }
 
 function createObject(x, y, type) {
-	if (type == 0 || type == '-') return null;
-	var n = new obstacle(x, y, tileSize, tileSize);
-	obstacles.push(n);
-	return n;
+	switch (type) {
+		case '-':
+			return null;
+		break;
+		case 'C':
+			spawnPoint.x = x;
+			spawnPoint.y = y;
+			return null;
+			break;
+		case 'E':
+			exit.x = x;
+			exit.y = y;
+			console.log("Exit: " + exit.x + " " + exit.y);
+			return null;
+			break;
+		case 'M':
+			enemies.push(new enemy(x, y, "ghost"));
+			return null;
+			break;
+		default:
+			var n = new obstacle(x, y, tileSize, tileSize);
+			obstacles.push(n);
+			return n;
+		break;
+	}
+}
+
+function swapRoom(){
+	console.log("New roomIndex: " + roomIndex + " RoomList.length: " + roomList.length);
+	if(roomIndex == roomList.length){
+		return;
+	}
+	level = decodeLevel(roomList[roomIndex]);
+	floodRate += 0.2;
+	levelWidth = level[0].length*tileSize;
+	levelHeight = level.length*tileSize;
+	console.log(level[0].length);
+	console.log(level.length);
+	if(roomIndex < 2){
+		waterLevel = levelHeight - 180;
+	}
+	else {
+		waterLevel += levelHeight;
+	}
+	if(waterLevel>levelHeight+waterMin)
+		waterLevel=levelHeight+waterMin;
+	movePlayer(spawnPoint.x, spawnPoint.y);
+	camera.reset();
+	roomIndex++;
+	}
+
+
+function movePlayer(x, y){
+	console.log("Moving player to " + x + ", " + y);
+	player.x = Math.floor(x);
+	player.y = Math.floor(y)+64-player.bb.height;
+	player.bb.update(player.x, player.y);
+}
+
+function updateEnemySpawns(){
+	//Limit number of enemies allowed alive at once
+	var enemyCap = 10;
+	if(enemies.length >= enemyCap) {
+		return;
+	}
+	var randomNumber = 1000;//Math.floor(Math.random()*2000 + 1200);
+	if(danger*(1+floodRate) >= randomNumber){
+		spawnFish();
+		danger = 0;
+	}
+
+	function Xypair(x, y){
+			this.x = x;
+			this.y = y;
+	}
+	
+	function spawnFish(){
+		//console.log("Spawning fish!");
+		if(waterLevel > levelHeight){
+			console.log("No water: fish spawn attempt was denied.");
+			return;
+		}
+		var possibleTiles = [];
+		//Add all areas under water, then remove ones occupied by obstacles
+		for (var i = levelHeight-tileSize; i >= waterLevel; i-=tileSize){
+			for (var j = 0; j < levelWidth; j+= tileSize){	
+			    var newPoint = new Xypair(j, i);
+				possibleTiles.push(newPoint);
+			}
+		}
+		//console.log("possibleTiles.length before removal: ",possibleTiles.length);
+		for (var i = 0; i < obstacles.length; i++){
+			var tile = obstacles[i];
+			for(var index = 0; index < possibleTiles.length; index++){
+				//If tile contains an obstacle, remove its spot from possibleTiles
+				if(tile.x == possibleTiles[index].x && tile.y == possibleTiles[index].y){
+					//console.log("Tile coords: ",tile.x, tile.y);
+					possibleTiles.splice(index, 1);
+				}
+				//else console.log(tile.x,possibleTiles[index].x,tile.y,possibleTiles[index].y );
+			}			
+		}
+		//console.log("possibleTiles.length after removal: ",possibleTiles.length);
+		if(possibleTiles.length < 1){
+			return;
+		}
+		var randomTile = Math.floor(Math.random()*possibleTiles.length-0.1);
+		//console.log("Randomtile: ",randomTile);
+		console.log("Fish spawning at tile ",(possibleTiles[randomTile].x)/tileSize, (possibleTiles[randomTile].y)/tileSize);
+		enemies.push(new enemy(possibleTiles[randomTile].x, possibleTiles[randomTile].y, "fish"));
+		//Limit number of fish to water tiles
+		enemyCap = Math.min(10, possibleTiles.length);
+	}
+}
+
+function setGameOver(state){
+	gameOver = true;
+	if(state == "win"){
+		displayWinScreen = true;
+	}
+	if(state == "lose"){
+		displayLoseScreen = true;
+	}
 }
 
 function gameWindow() {
-	waterLevel = canvas.height-180;
-	levelWidth = 5000;
-	levelHeight = 2000;
-	level = decodeLevel(Room1);//("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0/0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0/1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0/0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0/1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1/0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/");
-	/*levelWidth = level[0].length;
-	levelHeight = level.length;*/
 	player = new playerObject();
 	player.x = 64;
 	player.y = canvas.height/2;
-	camera = new cameraObject(0, 0, player, 128, 128);
+	camera = new cameraObject(0, 0, player, 50, 100);
+	swapRoom();
 	camera.reset = function() {
 		obstaclesOnscreen = [];
-		for (var i = Math.floor(this.y/tileSize); i < tilesV; i++) {
-			for (var j = Math.floor(this.x/tileSize); j < tilesH; j++)
+		var tileY = this.y/tileSize;
+		var tileX = this.x/tileSize;
+		for (var i = Math.floor(tileY); i < Math.min(tileY+tilesV, level.length); i++) {
+			for (var j = Math.floor(tileX); j < Math.min(tileX+tilesH, level[i].length); j++)
 				if (level[i][j] != null) obstaclesOnscreen.push(level[i][j]);
+		}
+		enemiesOnscreen = [];
+		for (var i in enemies) {
+			var e = enemies[i];
+			if (e.x+e.bb.width > camera.x && e.x < camera.x+canvas.width && e.y+e.bb.height > camera.y && e.y < camera.y+canvas.height){
+				enemiesOnscreen.push(e);
+			}
 		}
 	};
 	camera.reset();
-	
+				
 	this.update = function() {
 		if (input[keys.esc]) {
 			windows.push(menuPause);
 			return;
 		}
 		
+		for (var i in enemiesOnscreen)
+			enemiesOnscreen[i].update();
 		player.update();
 		camera.update();
 	};
 	
 	this.draw = function() {
+		context.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 		for (var i in obstaclesOnscreen)
 			obstaclesOnscreen[i].draw();
-			
+		
+		for (var i in enemiesOnscreen)
+			enemiesOnscreen[i].draw();
+		
+		//draw exit portal, then player
+		exit.spr.draw(exit.x-10, exit.y-20, camera.x, camera.y);
+		//displayedHitBox.draw();
 		player.draw();
 		
-		context.globalAlpha = 0.4;
-	  	context.fillStyle = 'blue';
+		context.globalAlpha = 0.55;
+	  	context.fillStyle = waterColor;
 	  	var dy = waterLevel-camera.y;
 	  	if (dy < 0) dy = 0;
 	  	context.fillRect(0, dy, canvas.width, canvas.height-dy);
 	  	context.globalAlpha = 1;
 	  	
+
    	context.fillStyle = 'red';
    	context.fillRect(8, 6, player.hp*(128/player.hpMax), 16); //draw player's hp bar
    	context.textAlign = "center";
    	context.font = "14px Arial";
    	var txt = Math.floor(player.hp) + "/" + player.hpMax; //draw player's hp values
 	//for debugging, displays weapon firetime and current cooldown in health bar
-	//var txt = Math.floor(player.weapon.attack_cooldown) + "/" + player.weapon.attack_delay; //draw player's hp values
+	//var txt = Math.floor(player.weapon.attack_cooldown) + "/" + player.weapon.attack_delay;
    	context.fillStyle = 'black';
    	context.fillText(txt, 72, 19);
    	
@@ -379,12 +709,32 @@ var menuPause = new menuWindow("menu_losed_clean", true);
 menuPause.addButton(new backButton("btn_play_sheet", 252, 41), 66, 243);
 //menuPause.bg = getImg("menu_losed_clean", canvas.width, canvas.height);
 
+function updateWater(){
+	waterLevel -= floodRate;
+}
+
 function update() {
-	updateWindows();
+	if(!gameOver){
+		time++;
+		danger++;
+		updateWindows();
+		updateWater();
+		updateEnemySpawns();
+	}
 }
 
 function draw() {
-	drawWindows();
+		drawWindows();
+	if(displayWinScreen){
+		context.fillStyle = 'green';
+		context.font = "20px Arial";
+		context.fillText("Congratulations! You completed the game in "+Math.round(time*2/300)+" seconds, with "+player.hp+ " health remaining.", 380, 300);
+	}
+	if(displayLoseScreen){
+		context.fillStyle = 'red';
+		context.font = "20px Arial";
+		context.fillText("GAME OVER!", 380, 300);
+	}
 }
 
 function game_loop() {
