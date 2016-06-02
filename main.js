@@ -126,8 +126,7 @@ function weapon(spr, width, height, name) {
 }
 
 var applyDamage = function(damage, aoe, x, y){	
-    var damageBox = new boundingBox(aoe, aoe, x, y);
-	console.log("applying "+damage+" damage to "+x+" "+y+" with aoe "+aoe);
+	var damageBox = new boundingBox(aoe, aoe, x, y);
 	//displayedHitBox.x = x;
 	damageBox.x = x;
 	//displayedHitBox.y = y; 
@@ -138,6 +137,7 @@ var applyDamage = function(damage, aoe, x, y){
 			var dir = damageBox.checkCollision(other);
   			if (dir != null) { //hit an enemy
 			console.log("Hit an enemy!");
+				console.log("applying "+damage+" damage to "+x+" "+y+" with aoe "+aoe);
 				enemiesOnscreen[i].takeDamage(damage);
 			}
 		}
