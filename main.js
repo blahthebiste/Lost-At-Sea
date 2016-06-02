@@ -21,7 +21,7 @@ var displayWinScreen = false;
 var displayLoseScreen = false;
 var gameOver = false;
 
-var roomIndex = 0;
+var roomIndex;
 //Weapon library, stores weapon data in this format:
 //name: [damage, attack_delay (ms), projectile_type (or melee for melee weapons), melee range (in tileSizes)]
 var weapon_library = function(name){
@@ -48,7 +48,7 @@ var swimAcceleration = 0.9;
 var swimMaxSpeed = 5;
 var breathLoss = 0.035;
 
-var floodRate = -0.2;
+var floodRate;
 var floodRateIncrease = 0.2;
 var waterColor = "#0060BB";
 
@@ -468,9 +468,9 @@ function enemy(x, y, type) {
 	}
 
   	this.draw = function() {
- 	  	/*context.fillStyle = 'blue'; //draw collision box for debugging
-	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
-  		this.spr.drawScaled(this.x+46-camera.x, this.y-camera.y, this.xScale);
+ 	  	/*context.fillStyle = 'green'; //draw collision box for debugging
+	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);*/
+  		this.spr.drawScaled(this.x/*+46*/-camera.x, this.y-camera.y, this.xScale);
   		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
   	};	
@@ -540,9 +540,10 @@ function swapRoom(){
 		return;
 	}
 	level = decodeLevel(roomList[roomIndex]);
-	if(floodRate < 0.8)
-	floodRate += floodRateIncrease;
-	floodRateIncrease *= 0.9;
+	if (roomIndex > 0 && floodRate < 0.8) {
+		floodRate += floodRateIncrease;
+		floodRateIncrease *= 0.9;
+	}
 	levelWidth = level[0].length*tileSize;
 	levelHeight = level.length*tileSize;
 	console.log(level[0].length);
@@ -630,7 +631,7 @@ function setGameOver(state){
 		displayWinScreen = true;
 	}
 	if(state == "lose"){
-		displayLoseScreen = true;
+		windows.push(menuLose);
 	}
 }
 
@@ -639,6 +640,8 @@ function gameWindow() {
 	player.x = 64;
 	player.y = canvas.height/2;
 	camera = new cameraObject(0, 0, player, 50, 100);
+	roomIndex = 0;
+	floodRate = 0;
 	swapRoom();
 	camera.reset = function() {
 		obstaclesOnscreen = [];
@@ -668,6 +671,10 @@ function gameWindow() {
 			enemies[i].update();
 		player.update();
 		camera.update();
+		time++;
+		danger++;
+		updateWater();
+		updateEnemySpawns();
 	};
 	
 	this.draw = function() {
@@ -706,29 +713,38 @@ function gameWindow() {
 	};
 }
 
-windows.push(new gameWindow());
+var menuMain = new menuWindow("menu_main_clean"); //main menu
+var buttonPlay = new button("btn_play_sheet", 252, 41); //play button
+buttonPlay.click = function() {
+	windows.push(new gameWindow());
+}
+menuMain.addButton(buttonPlay, 66, 243);
 
-var menuPause = new menuWindow("menu_losed_clean", true);
+var menuPause = new menuWindow("menu_pause", true);
 menuPause.addButton(new backButton("btn_play_sheet", 252, 41), 66, 243);
 //menuPause.bg = getImg("menu_losed_clean", canvas.width, canvas.height);
+
+var menuLose = new menuWindow("menu_losed_clean");
+var buttonMain = new button("btn_main_sheet", 252, 41); //return to main menu button
+buttonMain.click = function() {
+	windows.pop();
+	windows.pop();
+}
+menuLose.addButton(buttonMain, 66, 243);
+
+windows.push(menuMain);
 
 function updateWater(){
 	waterLevel -= floodRate;
 }
 
 function update() {
-	if(!gameOver){
-		time++;
-		danger++;
-		updateWindows();
-		updateWater();
-		updateEnemySpawns();
-	}
+	updateWindows();
 }
 
 function draw() {
 		drawWindows();
-	if(displayWinScreen){
+	if(displayWinScreen){ //remove these at some point
 		context.fillStyle = 'green';
 		context.font = "20px Arial";
 		context.fillText("Congratulations! You completed the game in "+Math.round(time*2/300)+" seconds, with "+player.hp+ " health remaining.", 380, 300);
