@@ -276,10 +276,10 @@ var windows = []; //window manager
 
 //window object, expects a .jpg for bg unless transparent = true in which case it expects a .png
 function menuWindow(bg, transparent) {
-	this.bg = new getImg(bg, canvas.width, canvas.height, this.transparent);
-  	this.buttons = [];
   	if (transparent == true) this.transparent = true;
   		else this.transparent = false;
+	this.bg = new getImg(bg, canvas.width, canvas.height, !this.transparent);
+  	this.buttons = [];
   
   	//put a button on it
   	this.addButton = function(button, x, y) {
