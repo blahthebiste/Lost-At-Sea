@@ -188,7 +188,7 @@ function playerObject() {
   	
 	this.performAttack = function(){
 		//apply damage based on weapon
-		this.weapon.activeFrames = 45;
+		this.weapon.activeFrames = 25;
 		this.weapon.firing = true;
 		if(this.xScale == -1) this.weapon.fire(this.x-this.weapon.range*tileSize+this.bb.width, this.y);
 		else this.weapon.fire(this.x, this.y);
