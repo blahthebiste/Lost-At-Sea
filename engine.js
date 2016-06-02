@@ -37,7 +37,7 @@ function sprite(src, width, height, offsetX, offsetY) {
 	this.drawScaled = function(x, y, xScale) {
   		if (xScale == undefined) xScale = 1;
   		context.save();
-  		if (xScale == -1) {context.translate(x, 0); x = 0; context.scale(-1, 1);}
+  		if (xScale == -1) {context.translate(x+this.width, 0); x = 0; context.scale(-1, 1);}
   		context.drawImage(this.img, x-this.offsetX, y-this.offsetY, this.width, this.height);
   		context.restore();
   	};
