@@ -16,7 +16,7 @@ var exitImg = new sprite("Portal", 64, 70, 0, 0);
 var waterMin = 900;
 var time = 0;
 //danger is a measure of how likely enemies will spawn in the water.
-var danger = 0;
+var danger = 1000;
 var displayWinScreen = false;
 var displayLoseScreen = false;
 var gameOver = false;
@@ -49,6 +49,7 @@ var swimMaxSpeed = 5;
 var breathLoss = 0.035;
 
 var floodRate = -0.2;
+var floodRateIncrease = 0.15;
 var waterColor = "#0060BB";
 
 var enemies = [];
@@ -539,8 +540,9 @@ function swapRoom(){
 		return;
 	}
 	level = decodeLevel(roomList[roomIndex]);
-	if(floodRate < 1)
-	floodRate += 0.2;
+	if(floodRate < 0.8)
+	floodRate += floodRateIncrease;
+	floodRateIncrease *= 0.75;
 	levelWidth = level[0].length*tileSize;
 	levelHeight = level.length*tileSize;
 	console.log(level[0].length);
@@ -572,7 +574,7 @@ function updateEnemySpawns(){
 	if(enemies.length >= enemyCap) {
 		return;
 	}
-	var randomNumber = Math.floor(Math.random()*1000 + 1200);
+	var randomNumber = 1000;//Math.floor(Math.random()*2000 + 1200);
 	if(danger*(1+floodRate) >= randomNumber){
 		spawnFish();
 		danger = 0;
