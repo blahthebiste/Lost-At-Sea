@@ -680,13 +680,6 @@ function gameWindow() {
 			for (var j = Math.floor(tileX); j < Math.min(tileX+tilesH, level[i].length); j++)
 				if (level[i][j] != null) obstaclesOnscreen.push(level[i][j]);
 		}
-		enemiesOnscreen = [];
-		for (var i in enemies) {
-			var e = enemies[i];
-			if (e.x+e.bb.width > camera.x && e.x < camera.x+canvas.width && e.y+e.bb.height > camera.y && e.y < camera.y+canvas.height){
-				enemiesOnscreen.push(e);
-			}
-		}
 	};
 	camera.reset();
 				
@@ -695,7 +688,13 @@ function gameWindow() {
 			windows.push(menuPause);
 			return;
 		}
-		
+		enemiesOnscreen = [];
+		for (var i in enemies) {
+			var e = enemies[i];
+			if (e.x+e.bb.width > camera.x && e.x < camera.x+canvas.width && e.y+e.bb.height > camera.y && e.y < camera.y+canvas.height){
+				enemiesOnscreen.push(e);
+			}
+		}
 		for (var i in enemies)
 			enemies[i].update();
 		player.update();
