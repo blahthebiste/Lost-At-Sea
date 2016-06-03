@@ -67,7 +67,6 @@ var obstaclesOnscreen = [];
 
 var levelObjects = [];
 var levelObjectsOnscreen = [];
-
 function obstacle(x, y, width, height) {
 	this.x = x;
 	this.y = y;
@@ -580,7 +579,6 @@ function levelObject(x, y, type){
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
   	};	
 }
-
 function spawnPoint() {
 	this.x = 0;
 	this.y = 0;
