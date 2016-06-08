@@ -485,11 +485,11 @@ function enemy(x, y, type) {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
 		
-		var tileY = Math.floor(this.y/tileSize);
-		var tileX = Math.floor(this.x/tileSize);
+		var tileY = this.y/tileSize;
+		var tileX = this.x/tileSize;
 		var collidables = [];
-		for (var i = tileY-2; i < Math.min(tileY+2, level.length); i++) {
-			for (var j = tileX-2; j < Math.min(tileX+2, level[i].length); j++)
+		for (var i = Math.max(Math.floor(tileY)-1, 0); i < Math.min(tileY+1, level.length); i++) {
+			for (var j = Math.max(Math.floor(tileX)-1, 0); j < Math.min(tileX+1, level[i].length); j++)
 				if (level[i][j] != null) collidables.push(level[i][j]);
 		}
 		
