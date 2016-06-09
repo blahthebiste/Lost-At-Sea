@@ -438,6 +438,8 @@ function enemy(x, y, type) {
 	this.invulnerable=false;
 	if(type == "fish"){
 		this.spr = new imageStrip("anglerFish", 60, 28, 0);
+		this.spr.row(-1, -1);
+		this.spr.setImage(0, 0);
 		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
 			this.vspeed = -0.5;
 		this.hp = this.hpMax = 10;
@@ -445,16 +447,19 @@ function enemy(x, y, type) {
 	}
 	else if(type=="spikePoke"){
 		this.spr = new imageStrip("anglerFish", 60, 28, 0);
+		this.spr.row(-1, -1, 1);
+		this.spr.setImage(0, 0);
 		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
 		this.hp = this.hpMax = 1;
 		this.invulnerable=true;
 		this.contactDamage = 2;
 	}
 	else{
-		this.spr = new imageStrip("EnemyWhite", 66, 104, 15);
+		this.spr = new imageStrip("EnemyWhite", 528, 104, 15);
 		this.bb = new boundingBox(66, 104, 0, 0); //define bounding box
-		this.spr.row=(528,104,8,false);
-		this.spr.setImage(0,0);
+		this.spr.row(528, 104, 8, false);
+		console.log(this.spr);
+		this.spr.setImage(0, 0);
 			this.vspeed = 0;
 		this.hp = this.hpMax = 20;
 		this.contactDamage = 2;
@@ -475,8 +480,8 @@ function enemy(x, y, type) {
 	}
 	
 	this.update = function() {
-		//this.spr.update();
-		//this.spr.setImage(this.spr.index, 0);
+		this.spr.update();
+		this.spr.setImage(this.spr.index, 0);
 		//Special swimming mechanics for fish:
 		if(this.type == "fish"){
 			if(this.y < waterLevel) {
@@ -484,7 +489,6 @@ function enemy(x, y, type) {
 			}
 			else{
 				this.vspeed += Math.random() -0.5;
-				this.spr.setImage(this.spr.index,0);
 			}
 		}
 		if(this.hp < 1){
