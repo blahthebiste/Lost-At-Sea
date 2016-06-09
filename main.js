@@ -438,7 +438,7 @@ function enemy(x, y, type) {
 	this.invulnerable=false;
 	if(type == "fish"){
 		this.spr = new imageStrip("anglerFish", 60, 28, 0);
-		this.spr.row(-1, -1);
+		this.spr.row(800, 372, 1);
 		this.spr.setImage(0, 0);
 		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
 			this.vspeed = -0.5;
@@ -447,7 +447,7 @@ function enemy(x, y, type) {
 	}
 	else if(type=="spikePoke"){
 		this.spr = new imageStrip("anglerFish", 60, 28, 0);
-		this.spr.row(-1, -1, 1);
+		this.spr.row(0, 0, 1);
 		this.spr.setImage(0, 0);
 		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
 		this.hp = this.hpMax = 1;
@@ -458,7 +458,6 @@ function enemy(x, y, type) {
 		this.spr = new imageStrip("EnemyWhite", 528, 104, 15);
 		this.bb = new boundingBox(66, 104, 0, 0); //define bounding box
 		this.spr.row(528, 104, 8, false);
-		console.log(this.spr);
 		this.spr.setImage(0, 0);
 			this.vspeed = 0;
 		this.hp = this.hpMax = 20;
@@ -557,10 +556,11 @@ function enemy(x, y, type) {
 	}
 
   	this.draw = function() {
- 	  	/*context.fillStyle = 'green'; //draw collision box for debugging
-	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);*/
+ 	  	context.fillStyle = 'green'; //draw collision box for debugging
+	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
   		//this.spr.drawScaled(this.x/*+46*/-camera.x, this.y-camera.y, this.xScale);
 		this.spr.draw(this.x-10-camera.x, this.y-camera.y, this.xScale);
+		//context.drawImage(this.spr.img, 0, 0, 800, 372, this.x-camera.x, this.y-camera.y, 60, 28);
   		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
   	};	
