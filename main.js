@@ -677,12 +677,12 @@ function movePlayer(x, y){
 
 function updateEnemySpawns(){
 	//Limit number of enemies allowed alive at once
-	var enemyCap = 10;
+	var enemyCap = Math.max(10, (levelHeight/tileSize + levelWidth/tileSize)/2);
 	if(enemies.length >= enemyCap) {
 		return;
 	}
-	var randomNumber = Math.floor(Math.random()*1000 + 1200);
-	if(danger*(1+floodRate) >= randomNumber){
+	var randomNumber = Math.floor(Math.random()*1000 + +waterLevel);
+	if(danger*(1+2*floodRate) >= randomNumber){
 		spawnFish();
 		danger = 0;
 	}
@@ -723,7 +723,7 @@ function updateEnemySpawns(){
 			return;
 		}
 		var randomTile = Math.floor(Math.random()*possibleTiles.length-0.1);
-		//console.log("Randomtile: ",randomTile);
+		console.log("Randomtile: ",randomTile);
 		console.log("Fish spawning at tile ",(possibleTiles[randomTile].x)/tileSize, (possibleTiles[randomTile].y)/tileSize);
 		enemies.push(new enemy(possibleTiles[randomTile].x, possibleTiles[randomTile].y, "fish"));
 		//Limit number of fish to water tiles
@@ -831,19 +831,19 @@ function gameWindow() {
 	};
 }
 
-var menuMain = new menuWindow("menu_main_clean"); //main menu
-var buttonPlay = new button("btn_play_sheet", 252, 41); //play button
+var menuMain = new menuWindow("titleScreen", true); //main menu
+var buttonPlay = new button("playButton", 252, 41); //play button
 buttonPlay.click = function() {
 	windows.push(new gameWindow());
 }
 menuMain.addButton(buttonPlay, 66, 243);
 
-var menuPause = new menuWindow("menu_pause", true);
-menuPause.addButton(new backButton("btn_play_sheet", 252, 41), 66, 243);
+var menuPause = new menuWindow("pauseScreen", true);
+menuPause.addButton(new backButton("playButton", 252, 41), 66, 243);
 //menuPause.bg = getImg("menu_losed_clean", canvas.width, canvas.height);
 
-var menuLose = new menuWindow("menu_losed_clean");
-var buttonMain = new button("btn_main_sheet", 252, 41); //return to main menu button
+var menuLose = new menuWindow("loseScreen", true);
+var buttonMain = new button("mainMenuButton", 252, 41); //return to main menu button
 buttonMain.click = function() {
 	windows.pop();
 	windows.pop();
