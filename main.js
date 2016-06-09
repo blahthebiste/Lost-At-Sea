@@ -29,7 +29,7 @@ var roomIndex;
 var weapon_library = function(name){
 	switch (name){
 	case "sword": 
-		return [ 10, 17, "melee", 1.5];
+		return [ 10, 32, "melee", 1.5];
 	case "hatchet": 
 		return [10, 11, "melee", 0.65];
 	}
@@ -136,10 +136,10 @@ function weapon(spr, width, height, name) {
 		if(this.firing) {
 			this.fire(x,y);
 			this.activeFrames--;
-		}
-		if(this.activeFrames == 0){
-			this.firing = false;
-			this.reset_animation();
+			if(this.activeFrames == 0){
+				this.firing = false;
+				this.reset_animation();
+			}
 		}
 	}
 }
@@ -155,15 +155,16 @@ var applyDamage = function(damage, aoe, x, y){
 			var other = enemiesOnscreen[i].bb;
 			var dir = damageBox.checkCollision(other);
   			if (dir != null) { //hit an enemy
-			console.log("Hit an enemy!");
-				console.log("applying "+damage+" damage to "+x+" "+y+" with aoe "+aoe);
-				enemiesOnscreen[i].takeDamage(damage);
+				if(enemiesOnscreen[i])
+					//console.log("Hit an enemy!");
+					//console.log("applying "+damage+" damage to "+x+" "+y+" with aoe "+aoe);
+					enemiesOnscreen[i].takeDamage(damage);
 			}
 		}
 	for (var i in levelObjectsOnscreen){
 		var other = levelObjectsOnscreen[i].bb;
 			var dir = damageBox.checkCollision(other);
-  			if (dir != null) { //hit an enemy
+  			if (dir != null) { //hit a lever
 			console.log("Hit a level object!");
 				levelObjectsOnscreen[i].activate();
 			}
@@ -215,7 +216,7 @@ function playerObject() {
   	
 	this.performAttack = function(){
 		//apply damage based on weapon
-		this.weapon.activeFrames = 25;
+		this.weapon.activeFrames = 15;
 		this.weapon.firing = true;
 		if(this.xScale == -1) this.weapon.fire(this.x-this.weapon.range*tileSize+this.bb.width, this.y);
 		else this.weapon.fire(this.x, this.y);
@@ -495,8 +496,11 @@ function enemy(x, y, type) {
 	this.jumpMax=10;
 	
 	this.takeDamage = function(dmg){
-		if(!this.invulnerable)
+		if(!this.invulnerable && this.dmgTick == 0){
 			this.hp -= dmg;
+			this.dmgTick = this.dmgTickMax;
+			console.log("Hit an enemy! Dealt",dmg,"damage, ",this.hp,"health remaining.");
+		}
 	}
 	
 	this.update = function() {
@@ -519,6 +523,7 @@ function enemy(x, y, type) {
 		displayedHitBox.x = this.x;
 		displayedHitBox.y = this.y;
 		this.handleCollision();
+		if(this.dmgTick > 0) this.dmgTick--;
 	}
 	
   	this.handleCollision = function() {
