@@ -437,22 +437,24 @@ function enemy(x, y, type) {
     this.type = type;
 	this.invulnerable=false;
 	if(type == "fish"){
-		this.spr = new sprite("anglerFish", 60, 28, 0, 0);
+		this.spr = new imageStrip("anglerFish", 60, 28, 0);
 		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
 			this.vspeed = -0.5;
 		this.hp = this.hpMax = 10;
 		this.contactDamage = 2;
 	}
 	else if(type=="spikePoke"){
-		this.spr = new sprite("anglerFish", 60, 28, 0, 0);
+		this.spr = new imageStrip("anglerFish", 60, 28, 0);
 		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
 		this.hp = this.hpMax = 1;
 		this.invulnerable=true;
 		this.contactDamage = 2;
 	}
 	else{
-		this.spr = new sprite("ghost", 46, 60, 0, 0);
-		this.bb = new boundingBox(46, 60, 0, 0); //define bounding box
+		this.spr = new imageStrip("EnemyWhite", 66, 104, 15);
+		this.bb = new boundingBox(66, 104, 0, 0); //define bounding box
+		this.spr.row=(528,104,8,false);
+		this.spr.setImage(0,0);
 			this.vspeed = 0;
 		this.hp = this.hpMax = 20;
 		this.contactDamage = 2;
@@ -480,7 +482,10 @@ function enemy(x, y, type) {
 			if(this.y < waterLevel) {
 				this.vspeed += 0.3;
 			}
-			else this.vspeed += Math.random() -0.5;
+			else{
+				this.vspeed += Math.random() -0.5;
+				this.spr.setImage(this.spr.index,0);
+			}
 		}
 		if(this.hp < 1){
 			console.log("An enemy has been slain!");
@@ -550,7 +555,8 @@ function enemy(x, y, type) {
   	this.draw = function() {
  	  	/*context.fillStyle = 'green'; //draw collision box for debugging
 	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);*/
-  		this.spr.drawScaled(this.x/*+46*/-camera.x, this.y-camera.y, this.xScale);
+  		//this.spr.drawScaled(this.x/*+46*/-camera.x, this.y-camera.y, this.xScale);
+		this.spr.draw(this.x-10-camera.x, this.y-camera.y, this.xScale);
   		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
   	};	
@@ -925,18 +931,18 @@ function gameWindow() {
 }
 
 var menuMain = new menuWindow("titleScreen", true); //main menu
-var buttonPlay = new button("playButton", 252, 41); //play button
+var buttonPlay = new button("playButton", 126, 41); //play button
 buttonPlay.click = function() {
 	windows.push(new gameWindow());
 }
 menuMain.addButton(buttonPlay, 66, 243);
 
 var menuPause = new menuWindow("pauseScreen", true);
-menuPause.addButton(new backButton("playButton", 252, 41), 66, 243);
+menuPause.addButton(new backButton("playButton", 126, 41), 66, 243);
 //menuPause.bg = getImg("menu_losed_clean", canvas.width, canvas.height);
 
 var menuLose = new menuWindow("loseScreen", true);
-var buttonMain = new button("mainMenuButton", 252, 41); //return to main menu button
+var buttonMain = new button("mainMenuButton", 126, 41); //return to main menu button
 buttonMain.click = function() {
 	windows.pop();
 	windows.pop();
