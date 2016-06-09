@@ -722,7 +722,7 @@ function updateEnemySpawns(){
 		if(possibleTiles.length < 1){
 			return;
 		}
-		var randomTile = Math.floor(Math.random()*possibleTiles.length-0.1);
+		var randomTile = Math.ceil(Math.random()*possibleTiles.length-1);
 		console.log("Randomtile: ",randomTile);
 		console.log("Fish spawning at tile ",(possibleTiles[randomTile].x)/tileSize, (possibleTiles[randomTile].y)/tileSize);
 		enemies.push(new enemy(possibleTiles[randomTile].x, possibleTiles[randomTile].y, "fish"));
