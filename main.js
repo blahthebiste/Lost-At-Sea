@@ -979,18 +979,18 @@ function gameWindow() {
 }
 
 var menuMain = new menuWindow("titleScreen", true); //main menu
-var buttonPlay = new button("playButton", 126, 41); //play button
+var buttonPlay = new button("playButton", 252, 41); //play button
 buttonPlay.click = function() {
 	windows.push(new gameWindow());
 }
 menuMain.addButton(buttonPlay, 66, 243);
 
 var menuPause = new menuWindow("pauseScreen", true);
-menuPause.addButton(new backButton("playButton", 126, 41), 66, 243);
+menuPause.addButton(new backButton("playButton", 252, 41), 66, 243);
 //menuPause.bg = getImg("menu_losed_clean", canvas.width, canvas.height);
 
 var menuLose = new menuWindow("loseScreen", true);
-var buttonMain = new button("mainMenuButton", 126, 41); //return to main menu button
+var buttonMain = new button("mainMenuButton", 252, 41); //return to main menu button
 buttonMain.click = function() {
 	windows.pop();
 	windows.pop();
