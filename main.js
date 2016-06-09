@@ -29,9 +29,9 @@ var roomIndex;
 var weapon_library = function(name){
 	switch (name){
 	case "sword": 
-		return [ 15, 17, "melee", 1.5];
+		return [ 10, 17, "melee", 1.5];
 	case "hatchet": 
-		return [15, 11, "melee", 0.65];
+		return [10, 11, "melee", 0.65];
 	}
 };
 
@@ -455,13 +455,34 @@ function enemy(x, y, type) {
 		this.contactDamage = 2;
 	}
 	else{
-		this.spr = new imageStrip("EnemyWhite", 528, 104, 15);
+		switch(type){
+			case "ghostRed":
+				this.spr = new imageStrip("EnemyRed", 528, 104, 6);
+				this.hp = this.hpMax = 10;
+				this.contactDamage = 3;
+				break;
+			case "ghostGreen":
+				this.spr = new imageStrip("EnemyGreen", 528, 104, 6);
+				this.hp = this.hpMax = 40;
+				this.contactDamage = 1;
+				break;
+			case "ghostBlue":
+				this.spr = new imageStrip("EnemyBlue", 528, 104, 6);
+				this.hp = this.hpMax = 20;
+				this.contactDamage = 2;
+				break;
+			case "ghostWhite":
+				this.spr = new imageStrip("EnemyWhite", 528, 104, 6);
+				this.hp = this.hpMax = 10;
+				this.invulnerable=true;
+				this.contactDamage = 1;
+				break;
+		}
+		this.spr = new imageStrip("EnemyBlue", 528, 104, 6);
 		this.bb = new boundingBox(66, 104, 0, 0); //define bounding box
 		this.spr.row(528, 104, 8, false);
-		this.spr.setImage(0, 0);
-			this.vspeed = 0;
-		this.hp = this.hpMax = 20;
-		this.contactDamage = 2;
+		this.spr.setImage(Math.round(Math.random()*7), 0);
+		this.vspeed = 0;
 	}
   		this.y = y+64-this.bb.height;
 	//this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
@@ -556,8 +577,8 @@ function enemy(x, y, type) {
 	}
 
   	this.draw = function() {
- 	  	context.fillStyle = 'green'; //draw collision box for debugging
-	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
+ 	  	//context.fillStyle = 'green'; //draw collision box for debugging
+	  	//context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
   		//this.spr.drawScaled(this.x/*+46*/-camera.x, this.y-camera.y, this.xScale);
 		this.spr.draw(this.x-10-camera.x, this.y-camera.y, this.xScale);
 		//context.drawImage(this.spr.img, 0, 0, 800, 372, this.x-camera.x, this.y-camera.y, 60, 28);
@@ -719,20 +740,38 @@ function createObject(x, y, type) {
 			console.log("Exit: " + exit.x + " " + exit.y);
 			return null;
 			break;
+		//case 'M':
+		//	enemies.push(new enemy(x, y, "ghost"));
+		//	return null;
+		//	break;
+		case 'R':
+			enemies.push(new enemy(x, y, "ghostRed"));
+			return null;
+			break;
 		case 'M':
-			enemies.push(new enemy(x, y, "ghost"));
+			enemies.push(new enemy(x, y, "ghostGreen"));
+			return null;
+			break;
+		case 'B':
+			enemies.push(new enemy(x, y, "ghostBlue"));
+			return null;
+			break;
+		case 'W':
+			enemies.push(new enemy(x, y, "ghostWhite"));
 			return null;
 			break;
 		case 'L':
 			var n = new levelObject(x, y, "waterSwitch");
 			levelObjects.push(n);
 			return null;
+			break;
 		case 'S':
 			if(Math.random()<.5){
 				var n = new levelObject(x,y,"spikes");
 				levelObjects.push(n);
 			}
 			return null;
+			break;
 		default:
 			var n = new obstacle(x, y, tileSize, tileSize);
 			obstacles.push(n);
