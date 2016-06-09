@@ -375,7 +375,7 @@ function updateWindows() {
 //draw the top window
 function drawWindows() {
 	canvas.width = canvas.width;
-	if (windows[windows.length-1].transparent) { //draw the window below it if we want to
+	if (windows[windows.length-1].transparent && windows.length > 1) { //draw the window below it if we want to
 		windows[windows.length-2].draw();
 	}
 	windows[windows.length-1].draw();
