@@ -221,6 +221,7 @@ function playerObject() {
 		if(this.xScale == -1) this.weapon.fire(this.x-this.weapon.range*tileSize+this.bb.width, this.y);
 		else this.weapon.fire(this.x, this.y);
 		this.weapon.attack_cooldown = this.weapon.attack_delay;
+		swordSound.play();
 	};
 	
   	this.update = function() {
@@ -248,6 +249,7 @@ function playerObject() {
   		//check if the player is in water
   		if (this.y+this.bb.height/2 > waterLevel) {
   			if (!this.swimming) {
+				splashSound.play();
   				this.swimming = true;
   				this.bDir = false;
   			}
@@ -410,10 +412,11 @@ function playerObject() {
   	this.takeDamage = function(amt) {
   		if (this.dmgTick == 0) {
 			shake=amt*4;
-			console.log(amt);
+			console.log("Taking",amt,"damage.");
   			this.hp -= amt;
   			if (this.hp < 0) this.hp = 0;
   			this.dmgTick = this.dmgTickMax;
+			playerDmgSound.play();
   		}
   	};
   	
@@ -500,6 +503,7 @@ function enemy(x, y, type) {
 			this.hp -= dmg;
 			this.dmgTick = this.dmgTickMax;
 			console.log("Hit an enemy! Dealt",dmg,"damage, ",this.hp,"health remaining.");
+			enemyDmgSound.play();
 		}
 	}
 	
@@ -654,7 +658,7 @@ function levelObject(x, y, type){
 				if(this.timer==0){
 					if(this.type=="spikes1"||(this.type=="spikes2"&&this.near()))
 					{
-						console.log("spikes at "+this.x+","+this.y+" activated");
+						//console.log("spikes at "+this.x+","+this.y+" activated");
 						this.state=1;
 						this.timer=4;
 					}
@@ -982,6 +986,7 @@ var menuMain = new menuWindow("titleScreen", true); //main menu
 var buttonPlay = new button("playButton", 252, 41); //play button
 buttonPlay.click = function() {
 	windows.push(new gameWindow());
+	stageMusic.play();
 }
 menuMain.addButton(buttonPlay, 66, 243);
 
@@ -994,6 +999,7 @@ var buttonMain = new button("mainMenuButton", 252, 41); //return to main menu bu
 buttonMain.click = function() {
 	windows.pop();
 	windows.pop();
+	stageMusic.stop();
 }
 menuLose.addButton(buttonMain, 66, 243);
 
