@@ -437,8 +437,8 @@ function enemy(x, y, type) {
     this.type = type;
 	this.invulnerable=false;
 	if(type == "fish"){
-		this.spr = new imageStrip("anglerFish", 60, 28, 0);
-		this.spr.row(800, 372, 1);
+		this.spr = new imageStrip("enemyFish", 103, 47, 3);
+		this.spr.row(412, 47, 4, false);
 		this.spr.setImage(0, 0);
 		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
 			this.vspeed = -0.5;
@@ -447,7 +447,7 @@ function enemy(x, y, type) {
 	}
 	else if(type=="spikePoke"){
 		this.spr = new imageStrip("anglerFish", 60, 28, 0);
-		this.spr.row(0, 0, 1);
+		this.spr.row(0,0,1);
 		this.spr.setImage(0, 0);
 		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
 		this.hp = this.hpMax = 1;
@@ -478,7 +478,7 @@ function enemy(x, y, type) {
 				this.contactDamage = 1;
 				break;
 		}
-		this.spr = new imageStrip("EnemyBlue", 528, 104, 6);
+		//this.spr = new imageStrip("EnemyBlue", 528, 104, 6);
 		this.bb = new boundingBox(66, 104, 0, 0); //define bounding box
 		this.spr.row(528, 104, 8, false);
 		this.spr.setImage(Math.round(Math.random()*7), 0);
