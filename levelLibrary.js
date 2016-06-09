@@ -1,22 +1,22 @@
 var Room1 = "G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G/\
 G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G/\
-G,G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,E,-,G,G/\
+G,G,G,G,G,-,-,-,-,S,S,-,S,-,S,-,E,-,G,G/\
 G,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G/\
 G,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G/\
-G,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G,G/\
+G,S,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G,G,G/\
 G,G,G,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G/\
 G,G,G,G,-,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G/\
-G,G,G,G,-,-,-,M,-,-,-,-,-,-,-,-,-,-,G,G/\
+G,G,G,G,-,S,S,M,-,S,S,S,-,-,-,-,-,-,G,G/\
 G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,-,G/\
 G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G/\
 G,G,G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,G,G/\
 G,G,G,G,G,G,G,G,G,G,G,G,-,-,-,-,-,G,G,G/\
 G,G,G,G,G,G,G,G,G,-,-,-,-,-,-,-,G,G,G,G/\
 G,G,G,G,G,G,-,-,-,-,-,-,-,-,-,G,G,G,G,G/\
-G,-,-,-,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G/\
+G,-,-,-,-,-,-,-,-,-,-,S,-,G,G,G,G,G,G,G/\
 G,-,-,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G/\
 G,-,C,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G,G,G/\
-G,G,G,-,-,-,-,-,-,-,G,G,G,G,G,G,G,G,G,G/\
+G,G,G,-,-,S,S,S,-,-,G,G,G,G,G,G,G,G,G,G/\
 G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G"
 
 var Room2 = "G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G/\

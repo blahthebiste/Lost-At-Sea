@@ -431,20 +431,31 @@ function enemy(x, y, type) {
   	this.hspeed = this.moveSpeed;
 	this.xScale = 1;
   	this.xScale = 1;
-  	this.hp = this.hpMax = 10;
   	this.dmgTick = 0; //how long until can be damaged again
   	this.dmgTickMax = 30;
   	this.baseHeight = 98;
     this.type = type;
+	this.invulnerable=false;
 	if(type == "fish"){
 		this.spr = new sprite("anglerFish", 60, 28, 0, 0);
 		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
 			this.vspeed = -0.5;
+		this.hp = this.hpMax = 10;
+		this.contactDamage = 2;
 	}
-	else {
+	else if(type=="spikePoke"){
+		this.spr = new sprite("anglerFish", 60, 28, 0, 0);
+		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
+		this.hp = this.hpMax = 1;
+		this.invulnerable=true;
+		this.contactDamage = 2;
+	}
+	else{
 		this.spr = new sprite("ghost", 46, 60, 0, 0);
 		this.bb = new boundingBox(46, 60, 0, 0); //define bounding box
 			this.vspeed = 0;
+		this.hp = this.hpMax = 20;
+		this.contactDamage = 2;
 	}
   		this.y = y+64-this.bb.height;
 	//this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
@@ -455,10 +466,10 @@ function enemy(x, y, type) {
   	this.weaponY = -21;
 	this.jumpAdd=0;
 	this.jumpMax=10;
-	this.contactDamage = 1;
 	
 	this.takeDamage = function(dmg){
-		this.hp -= dmg;
+		if(!this.invulnerable)
+			this.hp -= dmg;
 	}
 	
 	this.update = function() {
@@ -563,18 +574,92 @@ function levelObject(x, y, type){
 			this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
 			this.vspeed = -0.5;
 			break;
+		case "spikes":
+			this.y+=64;
+			this.spr = new sprite("blockTexture", 64, 64, 0, 0);
+			this.bb = new boundingBox(68, 64, 0, 0);
+			this.poke= new enemy(x,y,"spikePoke");
+			enemies.push(this.poke);
+			if(Math.random()<.5){
+				this.type="spikes1";//activate periodically
+				this.timer=Math.round(Math.random()*120);
+			}
+			else{
+				this.type="spikes2";//activate when player near
+				this.timer=0;
+			}
+			this.state=0; //0=still, 1=rising, 2=falling, 4=up
+			break;
 		default: break;
 	}
 	this.bb.update(x, y);
 	
 	this.activate = function(){
-		this.xScale = -1;
-		waterTarget = this.y+40;
+		if(this.type=="waterSwitch"){
+			this.xScale = -1;
+			waterTarget = this.y+40;
+		}
+		else{//some kind of spikes
+			this.activated=true;
+		}
 	}
+	
+	this.near = function(){//check if player is near
+		if(Math.abs(this.x-player.x)<150&&Math.abs(this.y-player.y)<150)
+			return true;
+		else
+			return false;
+	}
+	
+	this.update = function(){//only called on spikes!
+		switch(this.state)
+		{
+			case 0:
+				if(this.timer==0){
+					if(this.type=="spikes1"||(this.type=="spikes2"&&this.near()))
+					{
+						console.log("spikes at "+this.x+","+this.y+" activated");
+						this.state=1;
+						this.timer=4;
+					}
+				}
+				else{
+					this.timer--;
+				}
+				break;
+			case 1://rising
+				this.timer--;
+				this.y-=16;
+				if(this.timer==0){
+					this.timer=20;
+					this.state=4;
+				}
+				break;
+			case 4:
+				this.timer--;
+				if(this.timer==0){
+					this.timer=16;
+					this.state=2;
+				}
+				break;
+			case 2:
+				this.timer--;
+				this.y+=4;
+				if(this.timer==0){
+					this.timer=120;
+					this.state=0;
+				}
+				break;
+			
+		}
+		this.poke.x=this.x;
+		this.poke.y=this.y;
+	}
+	
 	this.draw = function() {
- 	  	/*context.fillStyle = 'blue'; //draw collision box for debugging
-	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
-  		this.spr.drawScaled(this.x-camera.x, this.y-camera.y, this.xScale);
+ 	  	/*context.fillStyle = 'green'; //draw collision box for debugging
+	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);*/
+  		this.spr.drawScaled(this.x/*+46*/-camera.x, this.y-camera.y, this.xScale);
   		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
   	};	
@@ -631,6 +716,12 @@ function createObject(x, y, type) {
 		case 'L':
 			var n = new levelObject(x, y, "waterSwitch");
 			levelObjects.push(n);
+			return null;
+		case 'S':
+			if(Math.random()<.5){
+				var n = new levelObject(x,y,"spikes");
+				levelObjects.push(n);
+			}
 			return null;
 		default:
 			var n = new obstacle(x, y, tileSize, tileSize);
@@ -782,6 +873,8 @@ function gameWindow() {
 		}
 		for (var i in enemies)
 			enemies[i].update();
+		for (var i in levelObjects)
+			if(levelObjects[i].type!="waterSwitch") levelObjects[i].update(); //update spikes
 		player.update();
 		camera.update();
 		time++;
