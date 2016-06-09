@@ -595,6 +595,7 @@ var exit = {
 function decodeLevel(str) {
 	enemies = [];
 	obstacles = [];
+	levelObjects = [];
 	waterTarget = -1;
 	var lev = str.split("/");
 	for (var i in lev) {
@@ -630,7 +631,7 @@ function createObject(x, y, type) {
 		case 'L':
 			var n = new levelObject(x, y, "waterSwitch");
 			levelObjects.push(n);
-			return n;
+			return null;
 		default:
 			var n = new obstacle(x, y, tileSize, tileSize);
 			obstacles.push(n);
@@ -793,6 +794,9 @@ function gameWindow() {
 		context.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 		for (var i in obstaclesOnscreen)
 			obstaclesOnscreen[i].draw();
+
+		for (var i in levelObjectsOnscreen)
+			levelObjectsOnscreen[i].draw();
 		
 		for (var i in enemiesOnscreen)
 			enemiesOnscreen[i].draw();
