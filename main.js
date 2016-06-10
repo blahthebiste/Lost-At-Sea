@@ -28,9 +28,9 @@ var roomIndex;
 //name: [damage, attack_delay (ms), projectile_type (or melee for melee weapons), melee range (in tileSizes)]
 var weapon_library = function(name){
 	switch (name){
-	case "sword": 
+	case "sword":
 		return [ 10, 32, "melee", 1.5];
-	case "hatchet": 
+	case "hatchet":
 		return [10, 11, "melee", 0.65];
 	}
 };
@@ -75,7 +75,7 @@ function obstacle(x, y, width, height) {
 	this.bb = new boundingBox(width+4, height, 0, 0);
 	this.bb.update(x, y);
 	this.spr = getImg("blockTexture", 64, 64, false);
-	
+
 	function setImage(){
 		this.spr = getImg("blockTexture", 64, 64, false);
 		for (var i in obstaclesOnscreen) {
@@ -88,7 +88,7 @@ function obstacle(x, y, width, height) {
 			}
 		}
 	}
-	
+
 	this.draw = function() {
 	  	//context.fillStyle = 'green';
 	  	//context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
@@ -110,11 +110,11 @@ function weapon(spr, width, height, name) {
 	this.attack_cooldown = weaponStatArray[1];
 	this.projectile = weaponStatArray[2];
 	this.range = weaponStatArray[3];
-	
+
 	this.draw = function(x, y, xScale) {
 		this.spr.draw(x, y, xScale);
 	};
-	
+
 	this.fire = function(x, y){
 		//REPLACE FOLLOWING LINE WITH ANIMATION CODE
 			this.spr.setImage(0, 1);
@@ -126,12 +126,12 @@ function weapon(spr, width, height, name) {
 				spawn_projectile(this.damage, this.projectile, x, y);
 			}
 	};
-	
+
 	//TBI
 	this.reset_animation = function(){
 		this.spr.setImage(0, 0);
 	};
-	
+
 	this.update = function(x,y){
 		if(this.firing) {
 			this.fire(x,y);
@@ -144,11 +144,11 @@ function weapon(spr, width, height, name) {
 	}
 }
 
-var applyDamage = function(damage, aoe, x, y){	
+var applyDamage = function(damage, aoe, x, y){
 	var damageBox = new boundingBox(aoe, aoe, x, y);
 	//displayedHitBox.x = x;
 	damageBox.x = x;
-	//displayedHitBox.y = y; 
+	//displayedHitBox.y = y;
 	damageBox.y = y;
 	//displayedHitBox.size = aoe;
 	for (var i in enemiesOnscreen) {
@@ -165,7 +165,7 @@ var applyDamage = function(damage, aoe, x, y){
 		var other = levelObjectsOnscreen[i].bb;
 			var dir = damageBox.checkCollision(other);
   			if (dir != null) { //hit a lever
-			//console.log("Hit a level object!");
+			console.log("Hit a level object!");
 				levelObjectsOnscreen[i].activate();
 			}
 	}
@@ -213,7 +213,7 @@ function playerObject() {
 	this.fallSpeed = 9;
 	this.jumpAdd=0;
 	this.jumpMax=10;
-  	
+
 	this.performAttack = function(){
 		//apply damage based on weapon
 		this.weapon.activeFrames = 15;
@@ -223,7 +223,7 @@ function playerObject() {
 		this.weapon.attack_cooldown = this.weapon.attack_delay;
 		swordSound.play();
 	};
-	
+
   	this.update = function() {
 		if(this.weapon.firing){
 			if(this.xScale == -1) this.weapon.update(this.x-this.weapon.range*tileSize+this.bb.width, this.y);
@@ -245,7 +245,7 @@ function playerObject() {
 		//Attack now takes mouse1
   		if ((this.weapon.attack_cooldown < 1) && input.down) this.performAttack();
   			//else this.weapon.reset_animation();
-  		
+
   		//check if the player is in water
   		if (this.y+this.bb.height/2 > waterLevel) {
   			if (!this.swimming) {
@@ -260,7 +260,7 @@ function playerObject() {
 	  		}
   		}
   		if (this.swimming) this.standing = false;
-  		
+
   		//check if the player's head is underwater
 	  	if (this.y+8 >= waterLevel) {
 	  		this.breath -= breathLoss;
@@ -269,7 +269,7 @@ function playerObject() {
 	  	}else {
 	  		this.breath += 0.2;
 	  		if (this.breath > this.breathMax) this.breath = this.breathMax;
-	  		
+
 	  		//bob up and down a bit for effect
 	  		if (this.swimming) {
 	  			if (this.y+40 > waterLevel && !this.bDir) {
@@ -282,7 +282,7 @@ function playerObject() {
 	  			}
 	  		}
 	  	}
-  		
+
   		//player moves at different speed if walking, swimming or jumping
   		if (this.standing) {
   			this.speedCap = 6;
@@ -296,7 +296,7 @@ function playerObject() {
   			this.acceleration = 0.8;//1.2;
   			this.friction = 0.2;
   		}
-  		
+
   		//move according to user input
 		/*if (input[keys.up]) {
 			if (this.standing||(this.swimming && this.y>waterLevel+48&&this.y<waterLevel+52))
@@ -307,13 +307,13 @@ function playerObject() {
 			}else //jump
 			if (this.swimming && this.vspeed > -this.speedCap) this.vspeed -= this.acceleration; //swim up
 		}*/
-		
+
 		if(input[keys.sing] && singCooldown==0)
 		{
 			this.vspeed=-50;
 			singCooldown=this.hp;//-this.hp*(128/this.hpMax);
 		}
-		
+
 		if (input[keys.up]||input[keys.space]) {
 			if (this.standing) {
 				this.vspeed = -15;
@@ -322,7 +322,7 @@ function playerObject() {
 			if (this.swimming)
 			{
 				if((this.y+this.bb.height/2<waterLevel+16) && (true))
-				{this.vspeed=-15; this.swimming=0; /*console.log("jumped out of water");*/ }//this.y=waterLevel-this.bb.height/2+8;} //jump out of water
+				{this.vspeed=-15; this.swimming=0; console.log("jumped out of water"); }//this.y=waterLevel-this.bb.height/2+8;} //jump out of water
 				else if (this.vspeed > -this.speedCap)
 					this.vspeed -= this.acceleration; //swim up
 			}
@@ -330,17 +330,17 @@ function playerObject() {
 		else if(!this.standing && !this.swimming && this.vspeed<0){
 			this.vspeed+=1;//Math.ceil(this.vspeed/2);
 		}
-		
+
 		if (input[keys.left] && this.hspeed > -this.speedCap) {this.hspeed -= this.acceleration; this.xScale = -1;} //move left
 		if (input[keys.right] && this.hspeed < this.speedCap) {this.hspeed += this.acceleration; this.xScale = 1;} //move right
-		
+
 		if (input[keys.down] && this.swimming && this.vspeed < this.speedCap) this.vspeed += this.acceleration; //swim down
-		
+
 		if (/*!this.standing &&*/ !this.swimming && this.vspeed < this.fallSpeed) this.vspeed += gravity; //fall
-		
+
 		/*if (this.swimming) applyFriction(this, 4, 4, this.friction, this.friction, false); //friction
 			else applyFriction(this, 6, 14, this.friction, 0, true);*/
-		
+
 		//apply friction
 		if (this.swimming) {
 			if (this.vspeed > 0) this.vspeed -= this.friction;
@@ -350,7 +350,7 @@ function playerObject() {
 		if (this.hspeed > 0) this.hspeed -= this.friction;
 			else if (this.hspeed < 0) this.hspeed += this.friction;
 		if (Math.abs(this.hspeed) < this.friction) this.hspeed = 0;
-		
+
 		//manage animations
 		this.spr.update();
 		if (this.standing) {
@@ -362,11 +362,11 @@ function playerObject() {
 			if (this.vspeed < 0) this.spr.setImage(0, 1);
 			if (this.vspeed > gravity) this.spr.setImage(1, 1);
 		}
-			
+
 		updateMotion(this);
 		this.handleCollision();
   	};
-  	
+
   	this.handleCollision = function() {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
@@ -411,7 +411,7 @@ function playerObject() {
 			}
 		}
   	};
-  	
+
   	this.takeDamage = function(amt) {
   		if (this.dmgTick == 0) {
 			shake=amt*4;
@@ -422,7 +422,7 @@ function playerObject() {
 			playerDmgSound.play();
   		}
   	};
-  	
+
   	this.draw = function() {
  	  	/*context.fillStyle = 'blue'; //draw collision box for debugging
 	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
@@ -502,7 +502,7 @@ function enemy(x, y, type) {
   	this.weaponY = -21;
 	this.jumpAdd=0;
 	this.jumpMax=10;
-	
+
 	this.takeDamage = function(dmg){
 		if(!this.invulnerable && this.dmgTick == 0){
 			this.hp -= dmg;
@@ -511,7 +511,7 @@ function enemy(x, y, type) {
 			enemyDmgSound.play();
 		}
 	}
-	
+
 	this.update = function() {
 		this.spr.update();
 		this.spr.setImage(this.spr.index, 0);
@@ -532,11 +532,11 @@ function enemy(x, y, type) {
 		this.handleCollision();
 		if(this.dmgTick > 0) this.dmgTick--;
 	}
-	
+
   	this.handleCollision = function() {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
-		
+
 		var tileY = this.y/tileSize;
 		var tileX = this.x/tileSize;
 		var collidables = [];
@@ -544,7 +544,7 @@ function enemy(x, y, type) {
 			for (var j = Math.max(Math.floor(tileX)-1, 0); j < Math.min(tileX+1, level[i].length); j++)
 				if (level[i][j] != null) collidables.push(level[i][j]);
 		}
-		
+
   		for (var i in collidables) {
   			var other = collidables[i].bb;
   			var dir = this.bb.checkCollision(other);
@@ -576,15 +576,15 @@ function enemy(x, y, type) {
   		}
  		this.bb.update(this.x, this.y);
   	};
-	
+
 	this.reverse = function() {
 		if (this.hspeed > 0) {
   			this.hspeed = -this.moveSpeed;
-			this.xScale = -1;			
+			this.xScale = -1;
 		}else
 		if (this.hspeed < 0) {
   			this.hspeed = this.moveSpeed;
-			this.xScale = 1;			
+			this.xScale = 1;
 		}
 	}
 
@@ -597,8 +597,8 @@ function enemy(x, y, type) {
 		//context.drawImage(this.spr.img, 0, 0, 800, 372, this.x-camera.x, this.y-camera.y, 60, 28);
   		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
-  	};	
-	
+  	};
+
 	this.die = function(){
 		var index = enemies.indexOf(this);
 		enemies.splice(index, 1);
@@ -611,7 +611,7 @@ function levelObject(x, y, type){
 	this.x=x;
 	this.y=y;
 	this.type=type;
-	
+
 	switch(type){
 		case "waterSwitch":
 			this.spr = new sprite("waterSwitch", 64, 96, 0, 0);
@@ -620,25 +620,26 @@ function levelObject(x, y, type){
 			this.vspeed = -0.5;
 			break;
 		case "spikes":
-			this.y+=64;
+			this.y+=0;
 			this.spr = new sprite("spikes", 64, 64, 0, 0);
 			this.bb = new boundingBox(68, 64, 0, 0);
 			this.poke= new enemy(x,y,"spikePoke");
 			enemies.push(this.poke);
-			if(Math.random()<.5){
-				this.type="spikes1";//activate periodically
-				this.timer=Math.round(Math.random()*120);
-			}
-			else{
-				this.type="spikes2";//activate when player near
-				this.timer=0;
-			}
-			this.state=0; //0=still, 1=rising, 2=falling, 4=up
+			//if(Math.random()<.5){
+				//this.type="spikes1";//activate periodically
+				//this.timer=Math.round(Math.random()*120);
+			//}
+			//else{
+				//this.type="spikes2";//activate when player near
+				//this.timer=0;
+			//}
+			this.state=4; //0=still, 1=rising, 2=falling, 4=up
+			this.timer=20;
 			break;
 		default: break;
 	}
 	this.bb.update(x, y);
-	
+
 	this.activate = function(){
 		if(this.type=="waterSwitch"){
 			this.xScale = -1;
@@ -648,16 +649,16 @@ function levelObject(x, y, type){
 			this.activated=true;
 		}
 	}
-	
+
 	this.near = function(){//check if player is near
 		if(Math.abs(this.x-player.x)<150&&Math.abs(this.y-player.y)<150)
 			return true;
 		else
 			return false;
 	}
-	
+
 	this.update = function(){//only called on spikes!
-		switch(this.state)
+		/*switch(this.state)
 		{
 			case 0:
 				if(this.timer==0){
@@ -695,20 +696,20 @@ function levelObject(x, y, type){
 					this.state=0;
 				}
 				break;
-			
-		}
+
+		}*/
 		this.poke.x=this.x;
 		this.poke.y=this.y;
 		this.poke.bb.update(this.x, this.y);
 	}
-	
+
 	this.draw = function() {
  	  	/*context.fillStyle = 'green'; //draw collision box for debugging
 	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);*/
   		this.spr.drawScaled(this.x/*+46*/-camera.x, this.y-camera.y, this.xScale);
   		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
-  	};	
+  	};
 }
 
 function spawnPoint() {
@@ -782,10 +783,8 @@ function createObject(x, y, type) {
 			return null;
 			break;
 		case 'S':
-			if(Math.random()<.5){
-				var n = new levelObject(x,y,"spikes");
-				levelObjects.push(n);
-			}
+			var n = new levelObject(x,y,"spikes");
+			levelObjects.push(n);
 			return null;
 			break;
 		default:
@@ -848,17 +847,17 @@ function updateEnemySpawns(){
 			this.x = x;
 			this.y = y;
 	}
-	
+
 	function spawnFish(){
 		//console.log("Spawning fish!");
 		if(waterLevel > levelHeight){
-			//console.log("No water: fish spawn attempt was denied.");
+			console.log("No water: fish spawn attempt was denied.");
 			return;
 		}
 		var possibleTiles = [];
 		//Add all areas under water, then remove ones occupied by obstacles
 		for (var i = levelHeight-tileSize; i >= waterLevel; i-=tileSize){
-			for (var j = 0; j < levelWidth; j+= tileSize){	
+			for (var j = 0; j < levelWidth; j+= tileSize){
 			    var newPoint = new Xypair(j, i);
 				possibleTiles.push(newPoint);
 			}
@@ -873,15 +872,15 @@ function updateEnemySpawns(){
 					possibleTiles.splice(index, 1);
 				}
 				//else console.log(tile.x,possibleTiles[index].x,tile.y,possibleTiles[index].y );
-			}			
+			}
 		}
 		//console.log("possibleTiles.length after removal: ",possibleTiles.length);
 		if(possibleTiles.length < 1){
 			return;
 		}
 		var randomTile = Math.ceil(Math.random()*possibleTiles.length-1);
-		//console.log("Randomtile: ",randomTile);
-		//console.log("Fish spawning at tile ",(possibleTiles[randomTile].x)/tileSize, (possibleTiles[randomTile].y)/tileSize);
+		console.log("Randomtile: ",randomTile);
+		console.log("Fish spawning at tile ",(possibleTiles[randomTile].x)/tileSize, (possibleTiles[randomTile].y)/tileSize);
 		enemies.push(new enemy(possibleTiles[randomTile].x, possibleTiles[randomTile].y, "fish"));
 		//Limit number of fish to water tiles
 		enemyCap = Math.min(10, possibleTiles.length);
@@ -924,7 +923,7 @@ function gameWindow() {
 		}
 	};
 	camera.reset();
-				
+
 	this.update = function() {
 		if (input[keys.esc]) {
 			windows.push(menuPause);
@@ -948,7 +947,7 @@ function gameWindow() {
 		updateWater();
 		updateEnemySpawns();
 	};
-	
+
 	this.draw = function() {
 		context.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 		for (var i in enemiesOnscreen)
@@ -956,22 +955,22 @@ function gameWindow() {
 
 		for (var i in levelObjectsOnscreen)
 			levelObjectsOnscreen[i].draw();
-				
+
 		for (var i in obstaclesOnscreen)
 			obstaclesOnscreen[i].draw();
-		
+
 		//draw exit portal, then player
 		exit.spr.draw(exit.x-10, exit.y-20, camera.x, camera.y);
 		displayedHitBox.draw();
 		player.draw();
-		
+
 		context.globalAlpha = 0.55;
 	  	context.fillStyle = waterColor;
 	  	var dy = waterLevel-camera.y;
 	  	if (dy < 0) dy = 0;
 	  	context.fillRect(0, dy, canvas.width, canvas.height-dy);
 	  	context.globalAlpha = 1;
-	  	
+
 
 	context.fillStyle = 'white';
 	context.fillRect(7+singCooldown*(128/10),5,130-singCooldown*(128/10)-(128-player.hp*(128/player.hpMax)), 18);
@@ -984,7 +983,7 @@ function gameWindow() {
 	//var txt = Math.floor(player.weapon.attack_cooldown) + "/" + player.weapon.attack_delay;
    	context.fillStyle = 'black';
    	context.fillText(txt, 72, 19);
-   	
+
    	context.fillStyle = 'blue';
    	context.fillRect(8, 28, player.breath*(128/player.breathMax), 16); //draw player's breath bar
 	};
@@ -1034,22 +1033,19 @@ var stageMusic = {
 		switch(this.stage){
 		case 1:
 			this.stop();
-			stage1Music.play();
 			stage1Music.loop = true;
-			console.log("Playing track 1. Loop:",stage1Music.loop);
+			stage1Music.play();
 			return;
 		case 2:
 			this.stop();
-			stage2Music.play();
 			stage2Music.loop = true;
-			console.log("Playing track 2. Loop:",stage2Music.loop);
+			stage2Music.play();
 			return;
 		case 3:
 			this.stop();
-			stage3Music.play();
 			stage3Music.loop = true;
-			console.log("Playing track 3. Loop:",stage3Music.loop);
-			return;	
+			stage3Music.play();
+			return;
 		default: return;
 		}
 	},
@@ -1060,7 +1056,6 @@ var stageMusic = {
 		stage1Music.stop();
 		stage2Music.stop();
 		stage3Music.stop();
-		console.log("Stopping music. Track1 loop:",stage1Music.loop);
 	},
 	handleMusicChange: function(){
 		if(roomIndex == 8){
