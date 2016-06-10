@@ -1,25 +1,23 @@
 	var stage1Music = new Howl({
 		urls: ['Sounds/LaS-Stage1.ogg'],
-		//loop: true,
-		//buffer: true,
 		onend: function(){
-			if(this.loop) this.play();
+			console.log("Track 1 ended.");
+				console.log("Track ended, loop is true");
+				stageMusic.play();
 		}
 	});
 	var stage2Music = new Howl({
 		urls: ['Sounds/LaS-Stage2.ogg'],
-		//loop: true,
-		//buffer: true,
 		onend: function(){
-			if(this.loop) this.play();
+				console.log("Track ended, loop is true");
+				stageMusic.play();
 		}
 	});
 	var stage3Music = new Howl({
 		urls: ['Sounds/LaS-Stage3.ogg'],
-		//loop: true,
-		//buffer: true,
 		onend: function(){
-			if(this.loop) this.play();
+				console.log("Track ended, loop is true");
+				stageMusic.play();
 		}
 	});
 	var enemyDmgSound = new Howl({urls: ['Sounds/enemyhit.ogg']});
