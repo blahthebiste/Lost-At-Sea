@@ -1034,20 +1034,26 @@ var stageMusic = {
 		switch(this.stage){
 		case 1:
 			this.stop();
+			stage1Music.loop = true;
 			stage1Music.play();
 			return;
 		case 2:
 			this.stop();
+			stage2Music.loop = true;
 			stage2Music.play();
 			return;
 		case 3:
 			this.stop();
+			stage3Music.loop = true;
 			stage3Music.play();
 			return;	
 		default: return;
 		}
 	},
 	stop: function(){
+		stage1Music.loop = false;
+		stage2Music.loop = false;
+		stage3Music.loop = false;
 		stage1Music.stop();
 		stage2Music.stop();
 		stage3Music.stop();
