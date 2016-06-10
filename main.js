@@ -28,9 +28,9 @@ var roomIndex;
 //name: [damage, attack_delay (ms), projectile_type (or melee for melee weapons), melee range (in tileSizes)]
 var weapon_library = function(name){
 	switch (name){
-	case "sword":
+	case "sword": 
 		return [ 10, 32, "melee", 1.5];
-	case "hatchet":
+	case "hatchet": 
 		return [10, 11, "melee", 0.65];
 	}
 };
@@ -80,7 +80,7 @@ function obstacle(x, y, width, height) {
 
 	function setImage(){
 		this.spr = getImg("blockTexture", 64, 64, false);
-		/*for (var i in obstaclesOnscreen) {
+		for (var i in obstaclesOnscreen) {
 			var other = obstaclesOnscreen[i].bb;
 			var dir = this.bb.checkCollision(other);
 			if (dir ==left){
@@ -88,9 +88,9 @@ function obstacle(x, y, width, height) {
 			if(rng<.25)
 				this.spr = getImg("blockLeft", 64, 64, false);
 			}
-		}*/
+		}
 	}
-
+	
 	this.draw = function() {
 	  	//context.fillStyle = 'green';
 	  	//context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);
@@ -112,11 +112,11 @@ function weapon(spr, width, height, name) {
 	this.attack_cooldown = weaponStatArray[1];
 	this.projectile = weaponStatArray[2];
 	this.range = weaponStatArray[3];
-
+	
 	this.draw = function(x, y, xScale) {
 		this.spr.draw(x, y, xScale);
 	};
-
+	
 	this.fire = function(x, y){
 		//REPLACE FOLLOWING LINE WITH ANIMATION CODE
 			this.spr.setImage(0, 1);
@@ -128,17 +128,17 @@ function weapon(spr, width, height, name) {
 				spawn_projectile(this.damage, this.projectile, x, y);
 			}
 	};
-
+	
 	//TBI
 	this.reset_animation = function(){
 		this.spr.setImage(0, 0);
 	};
-
+	
 	this.update = function(x,y){
 		if(this.firing) {
 			this.fire(x,y);
 			this.activeFrames--;
-			if(this.activeFrames == 0 ){
+			if(this.activeFrames == 0){
 				this.firing = false;
 				this.reset_animation();
 			}
@@ -146,11 +146,11 @@ function weapon(spr, width, height, name) {
 	}
 }
 
-var applyDamage = function(damage, aoe, x, y){
+var applyDamage = function(damage, aoe, x, y){	
 	var damageBox = new boundingBox(aoe, aoe, x, y);
 	//displayedHitBox.x = x;
 	damageBox.x = x;
-	//displayedHitBox.y = y;
+	//displayedHitBox.y = y; 
 	damageBox.y = y;
 	//displayedHitBox.size = aoe;
 	for (var i in enemiesOnscreen) {
@@ -167,7 +167,7 @@ var applyDamage = function(damage, aoe, x, y){
 		var other = levelObjectsOnscreen[i].bb;
 			var dir = damageBox.checkCollision(other);
   			if (dir != null) { //hit a lever
-			console.log("Hit a level object!");
+			//console.log("Hit a level object!");
 				levelObjectsOnscreen[i].activate();
 			}
 	}
@@ -219,7 +219,7 @@ function playerObject() {
 	this.fallSpeed = 9;
 	this.jumpAdd=0;
 	this.jumpMax=10;
-
+  	
 	this.performAttack = function(){
 		//apply damage based on weapon
 		this.weapon.activeFrames = 15;
@@ -229,7 +229,7 @@ function playerObject() {
 		this.weapon.attack_cooldown = this.weapon.attack_delay;
 		swordSound.play();
 	};
-
+	
   	this.update = function() {
 		if(this.weapon.firing){
 			if(this.xScale == -1) this.weapon.update(this.x-this.weapon.range*tileSize+this.bb.width, this.y);
@@ -251,7 +251,7 @@ function playerObject() {
 		//Attack now takes mouse1
   		if ((this.weapon.attack_cooldown < 1) && input.down) this.performAttack();
   			//else this.weapon.reset_animation();
-
+  		
   		//check if the player is in water
   		if (this.y+this.bb.height/2 > waterLevel) {
   			if (!this.swimming) {
@@ -266,7 +266,7 @@ function playerObject() {
 	  		}
   		}
   		if (this.swimming) this.standing = false;
-
+  		
   		//check if the player's head is underwater
 	  	if (this.y+8 >= waterLevel) {
 	  		this.breath -= breathLoss;
@@ -275,7 +275,7 @@ function playerObject() {
 	  	}else {
 	  		this.breath += 0.2;
 	  		if (this.breath > this.breathMax) this.breath = this.breathMax;
-
+	  		
 	  		//bob up and down a bit for effect
 	  		if (this.swimming) {
 	  			if (this.y+40 > waterLevel && !this.bDir) {
@@ -288,7 +288,7 @@ function playerObject() {
 	  			}
 	  		}
 	  	}
-
+  		
   		//player moves at different speed if walking, swimming or jumping
   		if (this.standing) {
   			this.speedCap = 6;
@@ -302,7 +302,7 @@ function playerObject() {
   			this.acceleration = 0.8;//1.2;
   			this.friction = 0.2;
   		}
-
+  		
   		//move according to user input
 		/*if (input[keys.up]) {
 			if (this.standing||(this.swimming && this.y>waterLevel+48&&this.y<waterLevel+52))
@@ -346,7 +346,7 @@ function playerObject() {
 
 		/*if (this.swimming) applyFriction(this, 4, 4, this.friction, this.friction, false); //friction
 			else applyFriction(this, 6, 14, this.friction, 0, true);*/
-
+		
 		//apply friction
 		if (this.swimming) {
 			if (this.vspeed > 0) this.vspeed -= this.friction;
@@ -356,7 +356,7 @@ function playerObject() {
 		if (this.hspeed > 0) this.hspeed -= this.friction;
 			else if (this.hspeed < 0) this.hspeed += this.friction;
 		if (Math.abs(this.hspeed) < this.friction) this.hspeed = 0;
-
+		
 		//manage animations
 		this.spr.update();
 		if (this.standing) {
@@ -375,7 +375,7 @@ function playerObject() {
 		updateMotion(this);
 		this.handleCollision();
   	};
-
+  	
   	this.handleCollision = function() {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
@@ -415,23 +415,23 @@ function playerObject() {
 			var other = enemiesOnscreen[i].bb;
 			var dir = this.bb.checkCollision(other);
   			if (dir != null) { //found a collision
-				console.log("Collision with enemy detected!");
+				//console.log("Collision with enemy detected!");
 				this.takeDamage(enemiesOnscreen[i].contactDamage);
 			}
 		}
   	};
-
+  	
   	this.takeDamage = function(amt) {
   		if (this.dmgTick == 0) {
 			shake=amt*4;
-			console.log("Taking",amt,"damage.");
+			//console.log("Taking",amt,"damage.");
   			this.hp -= amt;
   			if (this.hp < 0) this.hp = 0;
   			this.dmgTick = this.dmgTickMax;
 			playerDmgSound.play();
   		}
   	};
-
+  	
   	this.draw = function() {
  	  	/*context.fillStyle = 'blue'; //draw collision box for debugging
 	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
@@ -520,16 +520,16 @@ function enemy(x, y, type) {
   	this.weaponY = -21;
 	this.jumpAdd=0;
 	this.jumpMax=10;
-
+	
 	this.takeDamage = function(dmg){
 		if(!this.invulnerable && this.dmgTick == 0){
 			this.hp -= dmg;
 			this.dmgTick = this.dmgTickMax;
-			console.log("Hit an enemy! Dealt",dmg,"damage, ",this.hp,"health remaining.");
+			//console.log("Hit an enemy! Dealt",dmg,"damage, ",this.hp,"health remaining.");
 			enemyDmgSound.play();
 		}
 	}
-
+	
 	this.update = function() {
 		this.spr.update();
 		this.spr.setImage(this.spr.index, 0);
@@ -543,7 +543,7 @@ function enemy(x, y, type) {
 			}
 		}
 		if(this.hp < 1){
-			console.log("An enemy has been slain!");
+			//console.log("An enemy has been slain!");
 			this.die();
 		}
 		if(this.dmgTick<20)
@@ -551,11 +551,11 @@ function enemy(x, y, type) {
 		this.handleCollision();
 		if(this.dmgTick > 0) this.dmgTick--;
 	}
-
+	
   	this.handleCollision = function() {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
-
+		
 		var tileY = this.y/tileSize;
 		var tileX = this.x/tileSize;
 		var collidables = [];
@@ -563,7 +563,7 @@ function enemy(x, y, type) {
 			for (var j = Math.max(Math.floor(tileX)-1, 0); j < Math.min(tileX+1, level[i].length); j++)
 				if (level[i][j] != null) collidables.push(level[i][j]);
 		}
-
+		
   		for (var i in collidables) {
   			var other = collidables[i].bb;
   			var dir = this.bb.checkCollision(other);
@@ -595,15 +595,15 @@ function enemy(x, y, type) {
   		}
  		this.bb.update(this.x, this.y);
   	};
-
+	
 	this.reverse = function() {
 		if (this.hspeed > 0) {
   			this.hspeed = -this.moveSpeed;
-			this.xScale = -1;
+			this.xScale = -1;			
 		}else
 		if (this.hspeed < 0) {
   			this.hspeed = this.moveSpeed;
-			this.xScale = 1;
+			this.xScale = 1;			
 		}
 	}
 
@@ -616,8 +616,8 @@ function enemy(x, y, type) {
 		//context.drawImage(this.spr.img, 0, 0, 800, 372, this.x-camera.x, this.y-camera.y, 60, 28);
   		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
-  	};
-
+  	};	
+	
 	this.die = function(){
 		var index = enemies.indexOf(this);
 		enemies.splice(index, 1);
@@ -630,7 +630,7 @@ function levelObject(x, y, type){
 	this.x=x;
 	this.y=y;
 	this.type=type;
-
+	
 	switch(type){
 		case "waterSwitch":
 			this.spr = new sprite("waterSwitch", 64, 96, 0, 0);
@@ -658,7 +658,7 @@ function levelObject(x, y, type){
 		default: break;
 	}
 	this.bb.update(x, y);
-
+	
 	this.activate = function(){
 		if(this.type=="waterSwitch"){
 			if(this.xScale==1)
@@ -670,7 +670,7 @@ function levelObject(x, y, type){
 			this.activated=true;
 		}
 	}
-
+	
 	this.near = function(){//check if player is near
 		if(Math.abs(this.x-player.x)<150&&Math.abs(this.y-player.y)<150)
 			return true;
@@ -723,14 +723,14 @@ function levelObject(x, y, type){
 		this.poke.y=this.y;
 		this.poke.bb.update(this.x, this.y);
 	}
-
+	
 	this.draw = function() {
  	  	/*context.fillStyle = 'green'; //draw collision box for debugging
 	  	context.fillRect(this.x-camera.x, this.y-camera.y, this.bb.width, this.bb.height);*/
   		this.spr.drawScaled(this.x/*+46*/-camera.x, this.y-camera.y, this.xScale);
   		//if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
-  	};
+  	};	
 }
 
 function spawnPoint() {
@@ -775,7 +775,7 @@ function createObject(x, y, type) {
 		case 'E':
 			exit.x = x;
 			exit.y = y;
-			console.log("Exit: " + exit.x + " " + exit.y);
+			//console.log("Exit: " + exit.x + " " + exit.y);
 			return null;
 			break;
 		//case 'M':
@@ -817,7 +817,7 @@ function createObject(x, y, type) {
 }
 
 function swapRoom(){
-	console.log("New roomIndex: " + roomIndex + " RoomList.length: " + roomList.length);
+	//console.log("New roomIndex: " + roomIndex + " RoomList.length: " + roomList.length);
 	if(roomIndex == roomList.length){
 		return;
 	}
@@ -828,8 +828,8 @@ function swapRoom(){
 	}
 	levelWidth = level[0].length*tileSize;
 	levelHeight = level.length*tileSize;
-	console.log(level[0].length);
-	console.log(level.length);
+	//console.log(level[0].length);
+	//console.log(level.length);
 	if(roomIndex < 2){
 		waterLevel = levelHeight - 180;
 	}
@@ -846,7 +846,7 @@ function swapRoom(){
 
 
 function movePlayer(x, y){
-	console.log("Moving player to " + x + ", " + y);
+	//console.log("Moving player to " + x + ", " + y);
 	player.x = Math.floor(x);
 	player.y = Math.floor(y)+64-player.bb.height;
 	player.bb.update(player.x, player.y);
@@ -868,17 +868,17 @@ function updateEnemySpawns(){
 			this.x = x;
 			this.y = y;
 	}
-
+	
 	function spawnFish(){
 		//console.log("Spawning fish!");
 		if(waterLevel > levelHeight){
-			console.log("No water: fish spawn attempt was denied.");
+			//console.log("No water: fish spawn attempt was denied.");
 			return;
 		}
 		var possibleTiles = [];
 		//Add all areas under water, then remove ones occupied by obstacles
 		for (var i = levelHeight-tileSize; i >= waterLevel; i-=tileSize){
-			for (var j = 0; j < levelWidth; j+= tileSize){
+			for (var j = 0; j < levelWidth; j+= tileSize){	
 			    var newPoint = new Xypair(j, i);
 				possibleTiles.push(newPoint);
 			}
@@ -893,15 +893,15 @@ function updateEnemySpawns(){
 					possibleTiles.splice(index, 1);
 				}
 				//else console.log(tile.x,possibleTiles[index].x,tile.y,possibleTiles[index].y );
-			}
+			}			
 		}
 		//console.log("possibleTiles.length after removal: ",possibleTiles.length);
 		if(possibleTiles.length < 1){
 			return;
 		}
 		var randomTile = Math.ceil(Math.random()*possibleTiles.length-1);
-		console.log("Randomtile: ",randomTile);
-		console.log("Fish spawning at tile ",(possibleTiles[randomTile].x)/tileSize, (possibleTiles[randomTile].y)/tileSize);
+		//console.log("Randomtile: ",randomTile);
+		//console.log("Fish spawning at tile ",(possibleTiles[randomTile].x)/tileSize, (possibleTiles[randomTile].y)/tileSize);
 		enemies.push(new enemy(possibleTiles[randomTile].x, possibleTiles[randomTile].y, "fish"));
 		//Limit number of fish to water tiles
 		enemyCap = Math.min(10, possibleTiles.length);
@@ -917,6 +917,59 @@ function setGameOver(state){
 		windows.push(menuLose);
 	}
 }
+
+var stageMusic = {
+	stage: 1,
+	play: function(){
+		switch(this.stage){
+		case 1:
+			this.stop();
+			console.log("About to play track 1");
+			stage1Music.volume(1);
+			stage1Music.play();
+			console.log("Playing track 1."); //Loop:",stage1Music.loop);
+			return;
+		case 2:
+			this.stop();
+			stage2Music.volume(1);
+			stage2Music.play();
+			console.log("Playing track 2."); //Loop:",stage2Music.loop);
+			return;
+		case 3:
+			this.stop();
+			stage3Music.volume(1);
+			stage3Music.play();
+			console.log("Playing track 3."); //Loop:",stage3Music.loop);
+			return;	
+		default: return;
+		}
+	},
+	stop: function(){
+		stage1Music.stop();
+		stage2Music.stop();
+		stage3Music.stop();
+		console.log("Stopping music.");//Track1 loop:",stage1Music.loop);
+	},
+	handleMusicChange: function(){
+		if(roomIndex == 6){
+			console.log("Stage before zone change:",this.stage);
+			this.stage = 2;
+			console.log("Stage after zone change:",this.stage);
+			stage1Music.fadeOut(0, 1800);
+			stage2Music.fadeIn(1, 1800);
+			stage1Music.stop();
+		}
+		else if (roomIndex == 12){
+			console.log("Stage before zone change:",this.stage);
+			this.stage = 3;
+			console.log("Stage after zone change:",this.stage);
+			stage2Music.fadeOut(0, 1800);
+			stage3Music.fadeIn(1, 1800);
+			stage2Music.stop();
+		}
+	}
+}
+
 
 function gameWindow() {
 	player = new playerObject();
@@ -944,7 +997,7 @@ function gameWindow() {
 		}
 	};
 	camera.reset();
-
+				
 	this.update = function() {
 		if (input[keys.esc]) {
 			windows.push(menuPause);
@@ -968,7 +1021,7 @@ function gameWindow() {
 		updateWater();
 		updateEnemySpawns();
 	};
-
+	
 	this.draw = function() {
 		context.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 		for (var i in enemiesOnscreen)
@@ -976,22 +1029,22 @@ function gameWindow() {
 
 		for (var i in levelObjectsOnscreen)
 			levelObjectsOnscreen[i].draw();
-
+				
 		for (var i in obstaclesOnscreen)
 			obstaclesOnscreen[i].draw();
-
+		
 		//draw exit portal, then player
 		exit.spr.draw(exit.x-10, exit.y-20, camera.x, camera.y);
 		displayedHitBox.draw();
 		player.draw();
-
+		
 		context.globalAlpha = 0.55;
 	  	context.fillStyle = waterColor;
 	  	var dy = waterLevel-camera.y;
 	  	if (dy < 0) dy = 0;
 	  	context.fillRect(0, dy, canvas.width, canvas.height-dy);
 	  	context.globalAlpha = 1;
-
+	  	
 
 	context.fillStyle = 'white';
 	context.fillRect(7+singCooldown*(128/10),5,130-singCooldown*(128/10)-(128-player.hp*(128/player.hpMax)), 18);
@@ -1008,7 +1061,7 @@ function gameWindow() {
 	//var txt = Math.floor(player.weapon.attack_cooldown) + "/" + player.weapon.attack_delay;
    	context.fillStyle = 'black';
    	context.fillText(txt, 72, 19);
-
+   	
    	context.fillStyle = 'blue';
    	context.fillRect(8, 28, player.breath*(128/player.breathMax), 16); //draw player's breath bar
 	};
@@ -1018,7 +1071,7 @@ var menuMain = new menuWindow("TitleBack", true); //main menu
 var buttonPlay = new button("playButton", 252, 41); //play button
 buttonPlay.click = function() {
 	windows.push(new gameWindow());
-	stageMusic.play();
+		stageMusic.play();
 }
 var foreground = new button("Title", 2132,637);
  menuMain.addButton(buttonPlay, 700, 243);
@@ -1049,50 +1102,6 @@ function updateWater(){
 			waterLevel-=1;
 		}
 		waterLevel-=2;
-	}
-}
-
-var stageMusic = {
-	stage: 1,
-	play: function(){
-		switch(this.stage){
-		case 1:
-			this.stop();
-			stage1Music.loop = true;
-			stage1Music.play();
-			return;
-		case 2:
-			this.stop();
-			stage2Music.loop = true;
-			stage2Music.play();
-			return;
-		case 3:
-			this.stop();
-			stage3Music.loop = true;
-			stage3Music.play();
-			return;
-		default: return;
-		}
-	},
-	stop: function(){
-		stage1Music.loop = false;
-		stage2Music.loop = false;
-		stage3Music.loop = false;
-		stage1Music.stop();
-		stage2Music.stop();
-		stage3Music.stop();
-	},
-	handleMusicChange: function(){
-		if(roomIndex == 8){
-			this.stage = 2;
-			stage1Music.fadeOut(0, 1800);
-			stage2Music.fadeIn(1, 1800);
-		}
-		else if (roomIndex == 12){
-			this.stage = 3;
-			stage2Music.fadeOut(0, 1800);
-			stage3Music.fadeIn(1, 1800);
-		}
 	}
 }
 
