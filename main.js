@@ -315,7 +315,10 @@ function playerObject() {
 		}
 		
 		if (input[keys.up]||input[keys.space]) {
-			if (this.standing) this.vspeed = -15; else //jump
+			if (this.standing) {
+				this.vspeed = -15;
+				jumpSound.play();
+			}	else //jump
 			if (this.swimming)
 			{
 				if((this.y+this.bb.height/2<waterLevel+16) && (true))
@@ -814,6 +817,7 @@ function swapRoom(){
 	movePlayer(spawnPoint.x, spawnPoint.y);
 	camera.reset();
 	roomIndex++;
+	stageMusic.handleMusicChange();
 	}
 
 
@@ -1014,6 +1018,44 @@ function updateWater(){
 			waterLevel-=1;
 		}
 		waterLevel-=2;
+	}
+}
+
+var stageMusic = {
+	stage: 1,
+	play: function(){
+		switch(this.stage){
+		case 1:
+			this.stop();
+			stage1Music.play();
+			return;
+		case 2:
+			this.stop();
+			stage2Music.play();
+			return;
+		case 3:
+			this.stop();
+			stage3Music.play();
+			return;	
+		default: return;
+		}
+	},
+	stop: function(){
+		stage1Music.stop();
+		stage2Music.stop();
+		stage3Music.stop();
+	},
+	handleMusicChange: function(){
+		if(roomIndex == 8){
+			this.stage = 2;
+			stage1Music.fadeOut(0, 1800);
+			stage2Music.fadeIn(1, 1800);
+		}
+		else if (roomIndex == 12){
+			this.stage = 3;
+			stage2Music.fadeOut(0, 1800);
+			stage3Music.fadeIn(1, 1800);
+		}
 	}
 }
 
