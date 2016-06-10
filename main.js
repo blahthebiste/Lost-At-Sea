@@ -990,7 +990,7 @@ function gameWindow() {
 	};
 }
 
-var menuMain = new menuWindow("titleBack", true); //main menu
+var menuMain = new menuWindow("TitleBack", true); //main menu
 var buttonPlay = new button("playButton", 252, 41); //play button
 buttonPlay.click = function() {
 	windows.push(new gameWindow());
