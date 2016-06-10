@@ -371,7 +371,7 @@ function playerObject() {
 		this.bb.update(this.x, this.y);
 		this.standing = false;
 		//Check if player is touching the exit
-		if(collisionCircleRect(exit.x, exit.y, 1, Math.floor(this.x), Math.floor(this.y), this.bb.width, this.bb.height)){
+		if(collisionCircleRect(exit.x, exit.y, 5, Math.floor(this.x), Math.floor(this.y), this.bb.width, this.bb.height)){
 			if(roomIndex == roomList.length){
 				//display win screen
 				setGameOver("win");
@@ -426,10 +426,11 @@ function playerObject() {
   	this.draw = function() {
  	  	/*context.fillStyle = 'blue'; //draw collision box for debugging
 	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
-		if(this.dmgTick % 2 == 0)
+		if(this.dmgTick % 2 == 0){
   		this.spr.draw(this.x-10-camera.x, this.y-camera.y, this.xScale);
   		if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
   			else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
+		}
   	};
 }
 
@@ -528,8 +529,6 @@ function enemy(x, y, type) {
 			this.die();
 		}
 		updateMotion(this);
-		displayedHitBox.x = this.x;
-		displayedHitBox.y = this.y;
 		this.handleCollision();
 		if(this.dmgTick > 0) this.dmgTick--;
 	}
@@ -616,8 +615,8 @@ function levelObject(x, y, type){
 	switch(type){
 		case "waterSwitch":
 			this.spr = new sprite("waterSwitch", 64, 96, 0, 0);
-			this.y-=32;
-			this.bb = new boundingBox(64, 96, 0, 0); //define bounding box
+ 			this.y-=32;
+ 			this.bb = new boundingBox(64, 96, 0, 0); //define bounding box
 			this.vspeed = -0.5;
 			break;
 		case "spikes":
@@ -700,6 +699,7 @@ function levelObject(x, y, type){
 		}
 		this.poke.x=this.x;
 		this.poke.y=this.y;
+		this.poke.bb.update(this.x, this.y);
 	}
 	
 	this.draw = function() {
@@ -710,6 +710,7 @@ function levelObject(x, y, type){
   			//else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
   	};	
 }
+
 function spawnPoint() {
 	this.x = 0;
 	this.y = 0;
@@ -950,17 +951,18 @@ function gameWindow() {
 	
 	this.draw = function() {
 		context.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
-		for (var i in levelObjectsOnscreen)
-			levelObjectsOnscreen[i].draw();
-		for (var i in obstaclesOnscreen)
-			obstaclesOnscreen[i].draw();
-		
 		for (var i in enemiesOnscreen)
 			enemiesOnscreen[i].draw();
 		
+		for (var i in obstaclesOnscreen)
+			obstaclesOnscreen[i].draw();
+
+		for (var i in levelObjectsOnscreen)
+			levelObjectsOnscreen[i].draw();
+		
 		//draw exit portal, then player
 		exit.spr.draw(exit.x-10, exit.y-20, camera.x, camera.y);
-		//displayedHitBox.draw();
+		displayedHitBox.draw();
 		player.draw();
 		
 		context.globalAlpha = 0.55;
@@ -988,15 +990,15 @@ function gameWindow() {
 	};
 }
 
-var menuMain = new menuWindow("TitleBack", true); //main menu
+var menuMain = new menuWindow("titleBack", true); //main menu
 var buttonPlay = new button("playButton", 252, 41); //play button
 buttonPlay.click = function() {
 	windows.push(new gameWindow());
 	stageMusic.play();
 }
 var foreground = new button("Title", 2132,637);
-menuMain.addButton(buttonPlay, 700, 243);
-menuMain.addButton(foreground,0,-37);
+ menuMain.addButton(buttonPlay, 700, 243);
+ menuMain.addButton(foreground,0,-37);
 
 var menuPause = new menuWindow("pauseScreen", true);
 menuPause.addButton(new backButton("playButton", 252, 41), 66, 243);
@@ -1007,6 +1009,7 @@ var buttonMain = new button("mainMenuButton", 252, 41); //return to main menu bu
 buttonMain.click = function() {
 	windows.pop();
 	windows.pop();
+	stageMusic.stage = 1;
 	stageMusic.stop();
 }
 menuLose.addButton(buttonMain, 66, 243);
