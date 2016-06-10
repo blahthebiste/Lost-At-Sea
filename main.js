@@ -75,10 +75,12 @@ function obstacle(x, y, width, height) {
 	this.bb = new boundingBox(width+4, height, 0, 0);
 	this.bb.update(x, y);
 	this.spr = getImg("blockTexture", 64, 64, false);
+	if(Math.random()<.5)
+		this.spr = getImg("blockTexture2", 64, 64, false);
 
 	function setImage(){
 		this.spr = getImg("blockTexture", 64, 64, false);
-		for (var i in obstaclesOnscreen) {
+		/*for (var i in obstaclesOnscreen) {
 			var other = obstaclesOnscreen[i].bb;
 			var dir = this.bb.checkCollision(other);
 			if (dir ==left){
@@ -86,7 +88,7 @@ function obstacle(x, y, width, height) {
 			if(rng<.25)
 				this.spr = getImg("blockLeft", 64, 64, false);
 			}
-		}
+		}*/
 	}
 
 	this.draw = function() {
@@ -136,7 +138,7 @@ function weapon(spr, width, height, name) {
 		if(this.firing) {
 			this.fire(x,y);
 			this.activeFrames--;
-			if(this.activeFrames == 0){
+			if(this.activeFrames == 0 ){
 				this.firing = false;
 				this.reset_animation();
 			}
@@ -200,12 +202,16 @@ function playerObject() {
   	this.standing = false;
   	this.swimming = false;
   	this.baseHeight = 98;
-  	this.bb = new boundingBox(20, 98, 0, 0); //define bounding box
-  	this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
-  	this.spr.row(85, 99, 2, false); //walking animation
-  	this.spr.row(85, 120, 2, true); //jumping animation
-  	this.spr.row(120, 59, 2, false); //crouching animation
-  	this.spr.row(85, 98, 2, false); //standing still
+  	this.bb = new boundingBox(32, 90, 0, 0); //define bounding box
+  	//this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
+	this.spr = new imageStrip("lost", 1040, 700, 3);
+	this.spr.row(780, 100, 12, false);
+	this.spr.row(780, 100, 12, false);
+	this.spr.row(65, 100, 1, false);
+	this.spr.row(65, 100, 1, false);
+	this.spr.row(65, 100, 1, false);
+	this.spr.row(65, 100, 1, false);
+	this.spr.row(1040, 100, 16, false);
   	this.spr.setImage(0, 0);
   	this.weapon = new weapon("sword", 64, 107, "sword");
   	this.weaponX = 22;
@@ -308,14 +314,14 @@ function playerObject() {
 			if (this.swimming && this.vspeed > -this.speedCap) this.vspeed -= this.acceleration; //swim up
 		}*/
 
-		if(input[keys.sing] && singCooldown==0)
+		/*if(input[keys.sing] && singCooldown==0)
 		{
 			this.vspeed=-50;
 			singCooldown=this.hp;//-this.hp*(128/this.hpMax);
-		}
+		}*/
 
 		if (input[keys.up]||input[keys.space]) {
-			if (this.standing) {
+			if (this.standing && this.weapon.activeFrames==0) {
 				this.vspeed = -15;
 				jumpSound.play();
 			}	else //jump
@@ -331,8 +337,8 @@ function playerObject() {
 			this.vspeed+=1;//Math.ceil(this.vspeed/2);
 		}
 
-		if (input[keys.left] && this.hspeed > -this.speedCap) {this.hspeed -= this.acceleration; this.xScale = -1;} //move left
-		if (input[keys.right] && this.hspeed < this.speedCap) {this.hspeed += this.acceleration; this.xScale = 1;} //move right
+		if (input[keys.left] && this.hspeed > -this.speedCap && (this.weapon.activeFrames==0||!this.standing) ) {this.hspeed -= this.acceleration; this.xScale = -1;} //move left
+		if (input[keys.right] && this.hspeed < this.speedCap&& (this.weapon.activeFrames==0||!this.standing) ) {this.hspeed += this.acceleration; this.xScale = 1;} //move right
 
 		if (input[keys.down] && this.swimming && this.vspeed < this.speedCap) this.vspeed += this.acceleration; //swim down
 
@@ -354,13 +360,16 @@ function playerObject() {
 		//manage animations
 		this.spr.update();
 		if (this.standing) {
-			if (this.hspeed != 0) this.spr.setImage(this.spr.index, 0);
-				else this.spr.setImage(0, 3);
+			if (this.hspeed != 0) this.spr.setImage(this.spr.index, 1);
+				else this.spr.setImage(this.spr.index,0);
+			if (this.weapon.activeFrames!=0) this.spr.setImage(0, 2);
 		}else if (this.swimming) {
-			//insert swimming sprites
+			this.spr.setImage(this.spr.index,6);
+			if (this.weapon.activeFrames!=0) this.spr.setImage(0, 5);
 		}else {
-			if (this.vspeed < 0) this.spr.setImage(0, 1);
-			if (this.vspeed > gravity) this.spr.setImage(1, 1);
+			if (this.vspeed < 0) this.spr.setImage(0, 3);
+			if (this.vspeed > gravity) this.spr.setImage(0, 4);
+			if (this.weapon.activeFrames!=0) this.spr.setImage(0, 5);
 		}
 
 		updateMotion(this);
@@ -428,8 +437,8 @@ function playerObject() {
 	  	context.fillRect(this.x, this.y, this.bb.width, this.bb.height);*/
 		if(this.dmgTick % 2 == 0){
   		this.spr.draw(this.x-10-camera.x, this.y-camera.y, this.xScale);
-  		if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
-  			else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale);
+  		if(this.weapon.activeFrames>10) {if (this.xScale == 1) this.weapon.draw(this.x-camera.x+this.weaponX*this.xScale, this.y-camera.y-21, this.xScale);
+		else this.weapon.draw(this.x-camera.x+this.weapon.spr.curr.width*this.xScale, this.y-camera.y-21, this.xScale); }
 		}
   	};
 }
@@ -453,6 +462,15 @@ function enemy(x, y, type) {
 			this.vspeed = -0.5;
 		this.hp = this.hpMax = 10;
 		this.contactDamage = 2;
+	}
+	else if(type == "fish2"){
+		this.spr = new imageStrip("EnemyFish2", 103, 47, 3);
+		this.spr.row(412, 47, 4, false);
+		this.spr.setImage(0, 0);
+		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
+			this.vspeed = -0.5;
+		this.hp = this.hpMax = 10;
+		this.contactDamage = 3;
 	}
 	else if(type=="spikePoke"){
 		this.spr = new imageStrip("anglerFish", 60, 28, 0);
@@ -528,7 +546,8 @@ function enemy(x, y, type) {
 			console.log("An enemy has been slain!");
 			this.die();
 		}
-		updateMotion(this);
+		if(this.dmgTick<20)
+			updateMotion(this);
 		this.handleCollision();
 		if(this.dmgTick > 0) this.dmgTick--;
 	}
@@ -642,6 +661,8 @@ function levelObject(x, y, type){
 
 	this.activate = function(){
 		if(this.type=="waterSwitch"){
+			if(this.xScale==1)
+				enemyDmgSound.play();
 			this.xScale = -1;
 			waterTarget = this.y+40;
 		}
@@ -976,6 +997,10 @@ function gameWindow() {
 	context.fillRect(7+singCooldown*(128/10),5,130-singCooldown*(128/10)-(128-player.hp*(128/player.hpMax)), 18);
    	context.fillStyle = 'red';
    	context.fillRect(8, 6, player.hp*(128/player.hpMax), 16); //draw player's hp bar
+	if(player.dmgTick>player.dmgTickMax-3){
+		context.fillStyle = 'white';
+		context.fillRect(7+singCooldown*(128/10),5,130-singCooldown*(128/10)-(128-player.hp*(128/player.hpMax)), 18);
+	}
    	context.textAlign = "center";
    	context.font = "14px Arial";
    	var txt = Math.floor(player.hp) + "/" + player.hpMax; //draw player's hp values
