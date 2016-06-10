@@ -3,7 +3,7 @@
 		//loop: true,
 		//buffer: true,
 		onend: function(){
-			console.log("Restarting loop. Ended at position",this.pos());
+			if(this.loop) this.play();
 		}
 	});
 	var stage2Music = new Howl({
@@ -11,7 +11,7 @@
 		//loop: true,
 		//buffer: true,
 		onend: function(){
-			console.log("Restarting loop. Ended at position",this.pos());
+			if(this.loop) this.play();
 		}
 	});
 	var stage3Music = new Howl({
@@ -19,7 +19,7 @@
 		//loop: true,
 		//buffer: true,
 		onend: function(){
-			console.log("Restarting loop. Ended at position",this.pos());
+			if(this.loop) this.play();
 		}
 	});
 	var enemyDmgSound = new Howl({urls: ['Sounds/enemyhit.ogg']});
