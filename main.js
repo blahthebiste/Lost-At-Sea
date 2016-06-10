@@ -210,7 +210,7 @@ function playerObject() {
   	this.baseHeight = 98;
   	this.bb = new boundingBox(32, 90, 0, 0); //define bounding box
   	//this.spr = new imageStrip("neckstrip2", 121, 377, 15); //define sprite
-	this.spr = new imageStrip("lost", 1040, 700, 3);
+	this.spr = new imageStrip("Lost", 1040, 700, 3);
 	this.spr.row(780, 100, 12, false);
 	this.spr.row(780, 100, 12, false);
 	this.spr.row(65, 100, 1, false);
