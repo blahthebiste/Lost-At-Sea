@@ -446,7 +446,7 @@ function enemy(x, y, type) {
     this.type = type;
 	this.invulnerable=false;
 	if(type == "fish"){
-		this.spr = new imageStrip("enemyFish", 103, 47, 3);
+		this.spr = new imageStrip("EnemyFish", 103, 47, 3);
 		this.spr.row(412, 47, 4, false);
 		this.spr.setImage(0, 0);
 		this.bb = new boundingBox(60, 28, 0, 0); //define bounding box
