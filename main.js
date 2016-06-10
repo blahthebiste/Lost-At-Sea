@@ -953,12 +953,12 @@ function gameWindow() {
 		context.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 		for (var i in enemiesOnscreen)
 			enemiesOnscreen[i].draw();
-		
-		for (var i in obstaclesOnscreen)
-			obstaclesOnscreen[i].draw();
 
 		for (var i in levelObjectsOnscreen)
 			levelObjectsOnscreen[i].draw();
+				
+		for (var i in obstaclesOnscreen)
+			obstaclesOnscreen[i].draw();
 		
 		//draw exit portal, then player
 		exit.spr.draw(exit.x-10, exit.y-20, camera.x, camera.y);
