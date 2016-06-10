@@ -165,7 +165,7 @@ var applyDamage = function(damage, aoe, x, y){
 		var other = levelObjectsOnscreen[i].bb;
 			var dir = damageBox.checkCollision(other);
   			if (dir != null) { //hit a lever
-			console.log("Hit a level object!");
+			//console.log("Hit a level object!");
 				levelObjectsOnscreen[i].activate();
 			}
 	}
@@ -322,7 +322,7 @@ function playerObject() {
 			if (this.swimming)
 			{
 				if((this.y+this.bb.height/2<waterLevel+16) && (true))
-				{this.vspeed=-15; this.swimming=0; console.log("jumped out of water"); }//this.y=waterLevel-this.bb.height/2+8;} //jump out of water
+				{this.vspeed=-15; this.swimming=0; /*console.log("jumped out of water");*/ }//this.y=waterLevel-this.bb.height/2+8;} //jump out of water
 				else if (this.vspeed > -this.speedCap)
 					this.vspeed -= this.acceleration; //swim up
 			}
@@ -852,7 +852,7 @@ function updateEnemySpawns(){
 	function spawnFish(){
 		//console.log("Spawning fish!");
 		if(waterLevel > levelHeight){
-			console.log("No water: fish spawn attempt was denied.");
+			//console.log("No water: fish spawn attempt was denied.");
 			return;
 		}
 		var possibleTiles = [];
@@ -880,8 +880,8 @@ function updateEnemySpawns(){
 			return;
 		}
 		var randomTile = Math.ceil(Math.random()*possibleTiles.length-1);
-		console.log("Randomtile: ",randomTile);
-		console.log("Fish spawning at tile ",(possibleTiles[randomTile].x)/tileSize, (possibleTiles[randomTile].y)/tileSize);
+		//console.log("Randomtile: ",randomTile);
+		//console.log("Fish spawning at tile ",(possibleTiles[randomTile].x)/tileSize, (possibleTiles[randomTile].y)/tileSize);
 		enemies.push(new enemy(possibleTiles[randomTile].x, possibleTiles[randomTile].y, "fish"));
 		//Limit number of fish to water tiles
 		enemyCap = Math.min(10, possibleTiles.length);
@@ -1034,18 +1034,21 @@ var stageMusic = {
 		switch(this.stage){
 		case 1:
 			this.stop();
-			stage1Music.loop = true;
 			stage1Music.play();
+			stage1Music.loop = true;
+			console.log("Playing track 1. Loop:",stage1Music.loop);
 			return;
 		case 2:
 			this.stop();
-			stage2Music.loop = true;
 			stage2Music.play();
+			stage2Music.loop = true;
+			console.log("Playing track 2. Loop:",stage2Music.loop);
 			return;
 		case 3:
 			this.stop();
-			stage3Music.loop = true;
 			stage3Music.play();
+			stage3Music.loop = true;
+			console.log("Playing track 3. Loop:",stage3Music.loop);
 			return;	
 		default: return;
 		}
@@ -1057,6 +1060,7 @@ var stageMusic = {
 		stage1Music.stop();
 		stage2Music.stop();
 		stage3Music.stop();
+		console.log("Stopping music. Track1 loop:",stage1Music.loop);
 	},
 	handleMusicChange: function(){
 		if(roomIndex == 8){
